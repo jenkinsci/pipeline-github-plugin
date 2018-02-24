@@ -317,7 +317,7 @@ if (pullRequest['mergeable']) {
 
 ### Adding a label
 ```groovy
-pullRequest.addLabel('Build Passing')
+pullRequest.addLabels(["Build Failed"] as String [])
 ```
 
 ### Removing a label
