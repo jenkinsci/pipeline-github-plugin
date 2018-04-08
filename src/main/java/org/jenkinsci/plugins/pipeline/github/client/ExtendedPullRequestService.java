@@ -9,7 +9,6 @@ import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,7 +174,7 @@ public class ExtendedPullRequestService extends PullRequestService {
 
     public void createReviewRequests(final IRepositoryIdProvider repository,
                                      final int id,
-                                     final String...reviewers) throws IOException {
+                                     final List<String> reviewers) throws IOException {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
 
         String repoId = this.getId(repository);
@@ -186,13 +185,13 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("reviewers", Arrays.asList(reviewers));
+        params.put("reviewers", reviewers);
         getClient().post(uri.toString(), params, ExtendedPullRequest.class, BLACK_CAT_PREVIEW);
     }
 
     public void deleteReviewRequests(final IRepositoryIdProvider repository,
                                      final int id,
-                                     final String...reviewers) throws IOException {
+                                     final List<String> reviewers) throws IOException {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
 
         String repoId = this.getId(repository);
@@ -203,7 +202,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("reviewers", Arrays.asList(reviewers));
+        params.put("reviewers", reviewers);
         getClient().delete(uri.toString(), params, BLACK_CAT_PREVIEW);
     }
 }

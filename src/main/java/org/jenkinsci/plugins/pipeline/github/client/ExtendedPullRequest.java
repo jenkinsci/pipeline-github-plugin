@@ -3,8 +3,6 @@ package org.jenkinsci.plugins.pipeline.github.client;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.User;
 
-import java.util.List;
-
 /**
  * @author Aaron Whiteside
  */
@@ -12,7 +10,6 @@ public class ExtendedPullRequest extends PullRequest {
     private static final long serialVersionUID = 4674327177035503955L;
 
     private User closedBy;
-    private List<User> assignees;
     private boolean locked;
     private String mergeCommitSha;
     private Boolean maintainerCanModify;
@@ -23,14 +20,6 @@ public class ExtendedPullRequest extends PullRequest {
 
     public void setClosedBy(final User closedBy) {
         this.closedBy = closedBy;
-    }
-
-    public List<User> getAssignees() {
-        return assignees;
-    }
-
-    public void setAssignees(final List<User> assignees) {
-        this.assignees = assignees;
     }
 
     public boolean isLocked() {

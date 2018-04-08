@@ -86,7 +86,7 @@ public class GitHubHelper {
         SCMSource src = SCMSource.SourceByItem.findSource(job);
         if (src instanceof GitHubSCMSource) {
             GitHubSCMSource source = (GitHubSCMSource) src;
-            if (source.getScanCredentialsId() != null) {
+            if (source.getCredentialsId() != null) {
                 return RepositoryId.create(source.getRepoOwner(), source.getRepository());
             }
         }

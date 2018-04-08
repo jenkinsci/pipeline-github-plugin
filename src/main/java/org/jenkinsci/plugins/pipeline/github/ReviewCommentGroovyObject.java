@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
 import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.ReadOnlyPropertyException;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitComment;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
@@ -10,6 +8,7 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -26,85 +25,83 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport {
 
     private ExtendedCommitComment commitComment;
 
-    public ReviewCommentGroovyObject(final ExtendedCommitComment commitComment,
-                                     final RepositoryId base,
-                                     final ExtendedCommitService commitService) {
+    ReviewCommentGroovyObject(final ExtendedCommitComment commitComment,
+                              final RepositoryId base,
+                              final ExtendedCommitService commitService) {
         this.commitComment = commitComment;
         this.base = base;
         this.commitService = commitService;
     }
 
-    @Override
-    public Object getProperty(final String property) {
-        if (property == null) {
-            throw new MissingPropertyException("null", this.getClass());
-        }
-
-        switch (property) {
-            case "id":
-                return commitComment.getId();
-            case "url":
-                return commitComment.getUrl();
-            case "user":
-                return GitHubHelper.userToLogin(commitComment.getUser());
-            case "created_at":
-                return commitComment.getCreatedAt();
-            case "updated_at":
-                return commitComment.getUpdatedAt();
-            case "commit_id":
-                return commitComment.getCommitId();
-            case "original_commit_id":
-                return commitComment.getOriginalCommitId();
-            case "body":
-                return commitComment.getBody();
-            case "path":
-                return commitComment.getPath();
-            case "line":
-                return commitComment.getLine();
-            case "position":
-                return commitComment.getPosition();
-            case "original_position":
-                return commitComment.getPosition();
-            case "diff_hunk":
-                return commitComment.getDiffHunk();
-
-            default:
-                throw new MissingPropertyException(property, this.getClass());
-        }
+    @Whitelisted
+    public Integer getLine() {
+        return commitComment.getLine();
     }
 
-    @Override
-    public void setProperty(final String property, final Object newValue) {
-        if (property == null) {
-            throw new MissingPropertyException("null", this.getClass());
-        }
-
-        switch (property) {
-            case "id":
-            case "url":
-            case "user":
-            case "created_at":
-            case "updated_at":
-            case "commit_id":
-            case "original_commit_id":
-            case "path":
-            case "line":
-            case "position":
-            case "original_position":
-            case "diff_hunk":
-                throw new ReadOnlyPropertyException(property, getClass());
-
-            case "body":
-                Objects.requireNonNull(newValue, "body cannot be null");
-                setBody(newValue.toString());
-                break;
-
-            default:
-                throw new MissingPropertyException(property, this.getClass());
-        }
+    @Whitelisted
+    public Integer getPosition() {
+        return commitComment.getPosition();
     }
 
-    private void setBody(final String body) {
+    @Whitelisted
+    public Integer getOriginalPosition() {
+        return commitComment.getOriginalPosition();
+    }
+
+    @Whitelisted
+    public String getCommitId() {
+        return commitComment.getCommitId();
+    }
+
+    @Whitelisted
+    public String getOriginalCommitId() {
+        return commitComment.getOriginalCommitId();
+    }
+
+    @Whitelisted
+    public String getPath() {
+        return commitComment.getPath();
+    }
+
+    @Whitelisted
+    public String getDiffHunk() {
+        return commitComment.getDiffHunk();
+    }
+
+    @Whitelisted
+    public Date getCreatedAt() {
+        return commitComment.getCreatedAt();
+    }
+
+    @Whitelisted
+    public Date getUpdatedAt() {
+        return commitComment.getUpdatedAt();
+    }
+
+    @Whitelisted
+    public String getBody() {
+        return commitComment.getBody();
+    }
+
+    @Whitelisted
+    public long getId() {
+        return commitComment.getId();
+    }
+
+    @Whitelisted
+    public String getUrl() {
+        return commitComment.getUrl();
+    }
+
+    @Whitelisted
+    public String getUser() {
+        return GitHubHelper.userToLogin(commitComment.getUser());
+    }
+
+    @Whitelisted
+    public void setBody(final String body) {
+        Objects.requireNonNull(body, "body cannot be null");
+
         ExtendedCommitComment edit = new ExtendedCommitComment();
         edit.setId(commitComment.getId());
         edit.setBody(body);

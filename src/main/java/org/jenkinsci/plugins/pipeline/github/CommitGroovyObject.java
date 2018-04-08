@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
 import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.ReadOnlyPropertyException;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -50,46 +48,53 @@ public class CommitGroovyObject extends GroovyObjectSupport {
         this.base = base;
     }
 
-    @Override
-    public Object getProperty(final String property) {
-        if (property == null) {
-            throw new MissingPropertyException("null", this.getClass());
-        }
-
-        switch (property) {
-            case "sha":
-                return commit.getSha();
-            case "url":
-                return commit.getUrl();
-            case "author":
-                return commit.getAuthor().getLogin();
-            case "committer":
-                return commit.getCommitter().getLogin();
-            case "parents":
-                return getParents();
-            case "message":
-                return commit.getCommit().getMessage();
-            case "comment_count":
-                return commit.getCommit().getCommentCount();
-            case "comments":
-                return getComments();
-            case "additions":
-                return commit.getStats().getAdditions();
-            case "deletions":
-                return commit.getStats().getDeletions();
-            case "total_changes":
-                return commit.getStats().getTotal();
-            case "files":
-                return getFiles();
-            case "statuses":
-                return getStatuses();
-
-            default:
-                throw new MissingPropertyException(property, this.getClass());
-        }
+    @Whitelisted
+    public String getSha() {
+        return commit.getSha();
     }
 
-    private Iterable<ReviewCommentGroovyObject> getComments() {
+    @Whitelisted
+    public String getUrl() {
+        return commit.getUrl();
+    }
+
+    @Whitelisted
+    public String getAuthor() {
+        return commit.getAuthor().getLogin();
+    }
+
+    @Whitelisted
+    public String getCommitter() {
+        return commit.getCommitter().getLogin();
+    }
+
+    @Whitelisted
+    public String getMessage() {
+        return commit.getCommit().getMessage();
+    }
+
+    @Whitelisted
+    public int getCommentCount() {
+        return commit.getCommit().getCommentCount();
+    }
+
+    @Whitelisted
+    public int getAdditions() {
+        return commit.getStats().getAdditions();
+    }
+
+    @Whitelisted
+    public int getDeletions() {
+        return commit.getStats().getDeletions();
+    }
+
+    @Whitelisted
+    public int getTotalChanges() {
+        return commit.getStats().getTotal();
+    }
+
+    @Whitelisted
+    public Iterable<ReviewCommentGroovyObject> getComments() {
         Stream<ReviewCommentGroovyObject> stream = StreamSupport.stream(
                 commitService.pageComments2(base, commit.getSha()).spliterator(), false)
                 .flatMap(Collection::stream)
@@ -97,7 +102,8 @@ public class CommitGroovyObject extends GroovyObjectSupport {
         return stream::iterator;
     }
 
-    private List<CommitStatusGroovyObject> getStatuses() {
+    @Whitelisted
+    public List<CommitStatusGroovyObject> getStatuses() {
         try {
             return commitService.getStatuses(base, commit.getSha())
                     .stream()
@@ -108,43 +114,20 @@ public class CommitGroovyObject extends GroovyObjectSupport {
         }
     }
 
-    private List<String> getParents() {
+    @Whitelisted
+    public List<String> getParents() {
         return commit.getParents()
                 .stream()
                 .map(Commit::getSha)
                 .collect(toList());
     }
 
-    private List<CommitFileGroovyObject> getFiles() {
+    @Whitelisted
+    public List<CommitFileGroovyObject> getFiles() {
         return commit.getFiles()
                 .stream()
                 .map(CommitFileGroovyObject::new)
                 .collect(toList());
-    }
-
-    @Override
-    public void setProperty(final String property, final Object newValue) {
-        if (property == null) {
-            throw new MissingPropertyException("null", getClass());
-        }
-        switch (property) {
-            case "sha":
-            case "url":
-            case "author":
-            case "committer":
-            case "parents":
-            case "message":
-            case "comment_count":
-            case "comments":
-            case "additions":
-            case "deletions":
-            case "total_changes":
-            case "files":
-            case "statuses":
-                throw new ReadOnlyPropertyException(property, getClass());
-            default:
-                throw new MissingPropertyException(property, getClass());
-        }
     }
 
     @Whitelisted

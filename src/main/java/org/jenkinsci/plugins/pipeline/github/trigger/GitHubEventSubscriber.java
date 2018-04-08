@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -115,22 +116,24 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         if (job == null) {
             LOG.debug("No job found matching key: {}", key);
         } else {
-            boolean matchingTriggers = job.getTriggersJobProperty()
+            Optional<IssueCommentTrigger> matchingTrigger = job.getTriggersJobProperty()
                     .getTriggers()
                     .stream()
                     .filter(t -> t instanceof IssueCommentTrigger)
                     .map(IssueCommentTrigger.class::cast)
                     .filter(t -> triggerMatches(t, issueCommentEvent.getComment(), job))
-                    .findAny()
-                    .map(t -> Boolean.TRUE)
-                    .orElse(Boolean.FALSE);
+                    .findAny();
 
-            if (matchingTriggers) {
+            if (matchingTrigger.isPresent()) {
                 String commentAuthor = issueCommentEvent.getComment().getUserName();
                 boolean authorized = isAuthorized(job, commentAuthor);
 
                 if (authorized) {
-                    job.scheduleBuild(new IssueCommentCause(issueCommentEvent.getComment().getUserName()));
+                    job.scheduleBuild(
+                            new IssueCommentCause(
+                                    issueCommentEvent.getComment().getUserName(),
+                                    issueCommentEvent.getComment().getBody(),
+                                    matchingTrigger.get().getCommentPattern()));
                     LOG.info("Job: {} triggered by IssueComment: {}",
                             job.getFullName(), issueCommentEvent.getComment());
                 } else {

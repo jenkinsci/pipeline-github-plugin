@@ -33,7 +33,7 @@ See: [GitHub Branch Source Plugin](https://go.cloudbees.com/docs/cloudbees-docum
 
 # Credentials
 
-Currently all operations against GitHub will be performed using the builds `Checkout Credentials`, if no `Checkout Credentials` are configured then the `Scan Credentials` will be used instead.
+Currently all operations against GitHub will be performed using the builds `GitHubSCMSource` credentials. These will typically be the `Scan Credentials` you configured in your GitHub Organization. 
 
 However you can override this in a pipeline script by calling `setCredentials(String userName, String password)` before any properties or methods are accessed/invoked on the `pullRequest` global variable.
 
@@ -41,7 +41,7 @@ However you can override this in a pipeline script by calling `setCredentials(St
 pullRequest.setCredentials('John.Smith', 'qwerty4321')
 ```
 
-If you plan to use this plugin to add/modify/remove comments, labels, commit statuses etc. Please ensure that the required permissions are assigned to the token supplied in the credentials (`Checkout`/`Scan`/`Manually`).
+If you plan to use this plugin to add/modify/remove comments, labels, commit statuses etc. Please ensure that the required permissions are assigned to the token supplied in the credentials (`Scan Credentials` or `Manually` supplied).
 
 # Triggers
 
@@ -73,12 +73,38 @@ This trigger is intended to be used inside enterprise organizations:
 - `commentPattern` (__Required__) - A Java style regular expression
 
 ### Usage
+
+#### Scripted Pipeline:
 ```groovy
 properties([
-  pipelineTriggers([
-    issueCommentTrigger('.*test this please.*')
-  ])
+    pipelineTriggers([
+        issueCommentTrigger('.*test this please.*')
+    ])
 ])
+```
+
+#### Declarative Pipeline:
+```groovy
+pipeline {
+    triggers {
+        issueCommentTrigger('.*test this please.*')
+    }
+}
+```
+
+#### Detecting whether a build was started by the trigger in a script:
+```groovy
+def triggerCause = currentBuild.rawBuild.getCause(
+    org.jenkinsci.plugins.pipeline.github.trigger.IssueCommentCause
+)
+
+if (triggerCause) {
+    echo("Build was started by ${triggerCause.userLogin}, who wrote: " +
+         "\"${triggerCause.comment}\", which matches the " +
+         "\"${triggerCause.triggerPattern}\" trigger pattern.")
+} else {
+    echo('Build was not started by a trigger')
+}
 ```
 
 # Global Variables
@@ -88,47 +114,93 @@ Coming soon!
 
 ## `pullRequest`
 
+### Usage
+
+Before you can use the `pullRequest` global variable you must ensure you are actually in a Pull Request build job. The best way to do this is to check for the existence of the `CHANGE_ID` environment variable.
+
+#### Scripted Pipeline:
+```groovy
+node {
+    stage('Build') {
+        try {
+            echo 'Hello World'
+        } catch (err) {
+            // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
+            if (env.CHANGE_ID) {
+                pullRequest.addLabel('Build Failed')
+            }
+            throw err
+        }
+    }
+}
+```
+
+#### Declarative Pipeline:
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+    post {
+        failure {
+            script {
+                // CHANGE_ID is set only for pull requests, so it is safe to access the pullRequest global variable
+                if (env.CHANGE_ID) {
+                    pullRequest.addLabel('Build Failed')
+                }
+            }
+        }
+    }
+}
+```
+
 ### Properties
 
-Name | Type | Writable | Description
+Name | Type | Setter   | Description
 -----|------|----------|------------
 id | `Integer` | false | 
 state | `String` | **true** | Valid values `open` or `closed`
 number | `Integer` | false
 url | `String` | false
-patch_url | `String` | false
-diff_url | `String` | false
-issue_url | `String` | false
+patchUrl | `String` | false
+diffUrl | `String` | false
+issueUrl | `String` | false
 title | `String` | **true**
 body | `String` | **true**
 locked | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
 milestone | `Integer` | **true**
-head | `String` | false
+head | `String` | false | Revision (SHA) of the head commit of this pull request
+headRef | `String` | false | Name of the branch this pull request is created for
 base | `String` | **true** | Name of the base branch in the current repository this pull request targets
 files | `Iterable<CommitFile>` | false
 assignees | `List<String>` | **true** | Accepts a `List<String>`
 commits | `Iterable<Commit>` | false
 comments | `Iterable<IssueComment>` | false
-review_comments | `Iterable<ReviewComment>` | false
+reviewComments | `Iterable<ReviewComment>` | false
 labels | `Iterable<String>` | **true** | Accepts a `List<String>`
 statuses | `List<CommitStatus>` | false 
-requested_reviewers | `Iterable<String>` | false
-updated_at | `Date` | false
-created_at | `Date` | false
-created_by | `String` | false
-closed_at | `Date` | false
-closed_by | `String` | false
-merged_at | `Date` | false
-merged_by | `String` | false
-commit_count | `Integer` | false
-comment_count | `Integer` | false
+requestedReviewers | `Iterable<String>` | false
+updatedAt | `Date` | false
+createdAt | `Date` | false
+createdBy | `String` | false
+closedAt | `Date` | false
+closedBy | `String` | false
+mergedAt | `Date` | false
+mergedBy | `String` | false
+commitCount | `Integer` | false
+commentCount | `Integer` | false
 additions | `Integer` | false
 deletions | `Integer` | false
-changed_files | `Integer` | false
+changedFiles | `Integer` | false
 merged | `Boolean` | false
 mergeable | `Boolean` | false
-merge_commit_sha | `String` | false
-maintainer_can_modify | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`  
+mergeCommitSha | `String` | false
+maintainerCanModify | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
 
 
 ### Methods
@@ -144,14 +216,14 @@ Returns the merge's SHA/commit id.
 > CommitStatus createStatus(String status __[, String context, String description, String targetUrl]__)
 
 #### Labels
-> void addLabels(String...labels)
+> void addLabels(List<String> labels)
 
 > void removeLabel(String label)
 
 #### Assignees
-> void addAssignees(String...assignees)
+> void addAssignees(List<String> assignees)
 
-> void removeAssignees(String...assignees)
+> void removeAssignees(List<String> assignees)
 
 #### Review Comments
 > ReviewComment reviewComment(String commitId, String path, int position, String body)
@@ -170,9 +242,9 @@ Returns the merge's SHA/commit id.
 > void deleteComment(long commentId)
 
 ### Requested Reviewers
-> void createReviewRequests(String...reviewers)
+> void createReviewRequests(List<String> reviewers)
 
-> void deleteReviewRequests(String...reviewers)
+> void deleteReviewRequests(List<String> reviewers)
 
 #### Misc
 > void setCredentials(String userName, String password)
@@ -181,16 +253,16 @@ Returns the merge's SHA/commit id.
 
 ## CommitStatus
 ### Properties
-Name | Type | Writable | Description
+Name | Type | Setter | Description
 -----|------|----------|------------
 id | `String` | false | 
 url | `String` | false
 status | `String` | false | One of `pending`, `success`, `failure` or `error`
 context | `String` | false
 description | `String` | false
-target_url | `String` | false
-created_at | `Date` | false
-updated_at | `Date` | false
+targetUrl | `String` | false
+createdAt | `Date` | false
+updatedAt | `Date` | false
 creator | `String` | false
 
 ### Methods
@@ -198,7 +270,7 @@ None.
 
 ## Commit
 ### Properties
-Name | Type | Writable | Description
+Name | Type | Setter | Description
 -----|------|----------|------------
 sha | `String` | false
 url | `String` | false
@@ -206,11 +278,11 @@ author | `String` | false
 committer | `String` | false
 parents | `List<String>` | false | List of parent commit SHA's
 message | `String` | false |
-comment_count | `Integer` | false
+commentCount | `Integer` | false
 comments | `Iterable<ReviewComment>` | false 
 additions | `Integer` | false
 deletions | `Integer` | false
-total_changes | `Integer` | false
+totalChanges | `Integer` | false
 files | `List<CommitFile>` | false | List of files added, removed and or modified in this commit
 statuses | `List<CommitStatus>` | false | List of statuses associated with this commit
 
@@ -223,7 +295,7 @@ statuses | `List<CommitStatus>` | false | List of statuses associated with this 
 
 ## CommitFile
 ### Properties
-Name | Type | Writable | Description
+Name | Type | Setter | Description
 -----|------|----------|------------
 sha | `String` | false
 filename | `String` | false
@@ -232,43 +304,43 @@ patch | `String` | false
 additions | `Integer` | false
 deletions | `Integer` | false
 changes | `Integer` | false
-raw_url | `String` | false
-blob_url | `String` | false
+rawUrl | `String` | false
+blobUrl | `String` | false
 
 ### Methods
 None.
 
 ## IssueComment
 ### Properties
-Name | Type | Writable | Description
+Name | Type | Setter | Description
 -----|------|----------|------------
 id | `Integer` | false
 url | `String` | false
 user | `String` | false
 body | `String` | **true**
-created_at | `Date` | false
-updated_at | `Date` | false
+createdAt | `Date` | false
+updatedAt | `Date` | false
 
 ### Methods
 > void delete()
 
 ## ReviewComment
 ### Properties
-Name | Type | Writable | Description
+Name | Type | Setter | Description
 -----|------|----------|------------
 id | `Integer` | false
 url | `String` | false
 user | `String` | false
-created_at | `Date` | false
-updated_at | `Date` | false
-commit_id | `String` | false
-original_commit_id | `Integer` | false
+createdAt | `Date` | false
+updatedAt | `Date` | false
+commitId | `String` | false
+originalCommitId | `Integer` | false
 body | `String` | **true**
 path | `String` | false
 line | `Integer` | false
 position | `Integer` | false
-original_position | `Integer` | false
-diff_hunk | `String` | false
+originalPosition | `Integer` | false
+diffHunk | `String` | false
 
 ### Methods
 > void delete()
@@ -280,13 +352,13 @@ diff_hunk | `String` | false
 
 ### Updating a Pull Request's title and body
 ```groovy
-pullRequest['title'] = 'Updated title'
-pullRequest['body'] = pullRequest['body'] + '\nEdited by Pipeline'
+pullRequest.title = 'Updated title'
+pullRequest.body = pullRequest.body + '\nEdited by Pipeline'
 ```
 
 ### Closing a Pull Request
 ```groovy
-pullRequest['status'] = 'closed'
+pullRequest.status = 'closed'
 ```
 
 ### Creating a Commit Status against the head of the Pull Request
@@ -299,18 +371,18 @@ pullRequest.createStatus(status: 'success',
 
 ### Locking and unlocking a Pull Request's conversation
 ```groovy
-if (pullRequest['locked']) {
-    pullRequest['locked'] = false
+if (pullRequest.locked) {
+    pullRequest.locked = false
 }
 ```
 
 ### Merging a Pull Request
 ```groovy
-if (pullRequest['mergeable']) {
+if (pullRequest.mergeable) {
     pullRequest.merge('merge commit message here')
 }
 // or
-if (pullRequest['mergeable']) {
+if (pullRequest.mergeable) {
     pullRequest.merge(commitTile: 'Make it so..', commitMessage: 'TO BOLDLY GO WHERE NO MAN HAS GONE BEFORE...', mergeMethod: 'squash')
 }
 ```
@@ -327,28 +399,28 @@ pullRequest.removeLabel('Build Passing')
 
 ### Replacing all labels
 ```groovy
-pullRequest['labels'] = ['Bug', 'Feature']
+pullRequest.labels = ['Bug', 'Feature']
 ```
 
 ### Adding an assignee
 ```groovy
-pullRequest.addAssginee('Spock')
+pullRequest.addAssignee('Spock')
 ```
 
 ### Removing an assignee
 ```groovy
-pullRequest.removeAssginee('McCoy')
+pullRequest.removeAssignee('McCoy')
 ```
 
 ### Replacing all assignees
 ```groovy
-pullRequest['assignees'] = ['Data', 'Scotty']
+pullRequest.assignees = ['Data', 'Scotty']
 ```
 
 ### Listing all added/modified/removed files
 ```groovy
-for (commitFile in pullRequest['files']) {
-    echo "SHA: ${commitFile['sha']} File Name: ${commitFile['filename']} Status: ${commitFile['status']}"
+for (commitFile in pullRequest.files) {
+    echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
 }
 ```
 
@@ -359,9 +431,9 @@ def comment = pullRequest.comment('This PR is highly illogical..')
 
 ### Editing a comment
 ```groovy
-pullRequest.editComment(comment['id'], 'Live long and prosper.')
+pullRequest.editComment(comment.id, 'Live long and prosper.')
 // or
-comment['body'] = 'Live long and prosper.'
+comment.body = 'Live long and prosper.'
 ```
 
 ### Deleting a comment
@@ -382,72 +454,72 @@ def comment = pullRequest.reviewComment(commitId, path, lineNumber, body)
 
 ### Editing a review comment
 ```groovy
-pullRequest.editReviewComment(comment['id'], 'Live long and prosper.')
+pullRequest.editReviewComment(comment.id, 'Live long and prosper.')
 // or
-comment['body'] = 'Live long and prosper.'
+comment.body = 'Live long and prosper.'
 ```
 
 ### Deleting a review comment
 ```groovy
-pullRequest.deleteReviewComment(comment['id'])
+pullRequest.deleteReviewComment(comment.id)
 // or
 comment.delete()
 ```
 
 ### Replying to a review comment
 ```groovy
-pullRequest.replyToReviewComment(comment['id'], 'Khaaannnn!')
+pullRequest.replyToReviewComment(comment.id, 'Khaaannnn!')
 // or
 comment.createReply('Khaaannnn!')
 ```
 
 ### Listing a Pull Request's commits
 ```groovy
-for (commit in pullRequest['commits']) {
-   echo "SHA: ${commit['sha']}, Committer: ${commit['commiter']}, Commit Message: ${commit['message']}"
+for (commit in pullRequest.commits) {
+   echo "SHA: ${commit.sha}, Committer: ${commit.committer}, Commit Message: ${commit.message}"
 }
 ```
 
 ### Listing a Pull Request's comments
 ```groovy
-for (comment in pullRequest['comments']) {
-  echo "Author: ${comment['user']}, Comment: ${comment['body']}"    
+for (comment in pullRequest.comments) {
+  echo "Author: ${comment.user}, Comment: ${comment.body}"
 }
 ```
 
 ### Listing a Pull Request's review comments
 ```groovy
-for (reviewComment in pullRequest['review_comments']) {
-  echo "File: ${reviewComment['path']}, Line: ${reviewComment['line']}, Author: ${reviewComment['user']}, Comment: ${reviewComment['body']}"    
+for (reviewComment in pullRequest.reviewComments) {
+  echo "File: ${reviewComment.path}, Line: ${reviewComment.line}, Author: ${reviewComment.user}, Comment: ${reviewComment.body}"
 } 
 ```
 
 ### Listing a commit's statuses
 ```groovy
-for (commit in pullRequest['commits']) {
-  for (status  in commit['statuses']) {
-     echo "Commit: ${commit['sha']}, Status: ${status['status']}, Context: ${status['context']}, URL: ${status['target_url']}"
+for (commit in pullRequest.commits) {
+  for (status  in commit.statuses) {
+     echo "Commit: ${commit.sha}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
   }
 }
 ```
 
 ### Creating a Commit Status against arbitrary commits
 ```groovy
-for (commit in pullRequest['commits']) {
+for (commit in pullRequest.commits) {
   commit.createStatus(status: 'pending')
 }
 ```
 
 ### Listing a Pull Request's current statuses
 ```groovy
-for (status in pullRequest['statuses']) {
-  echo "Commit: ${pullRequest['head']}, Status: ${status['status']}, Context: ${status['context']}, URL: ${status['target_url']}"
+for (status in pullRequest.statuses) {
+  echo "Commit: ${pullRequest.head}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
 }
 ```
 
 ### Listing a Pull Request's requested reviewers
 ```groovy
-for (requestedReviewer in pullRequest['requested_reviewers']) {
+for (requestedReviewer in pullRequest.requestedReviewers) {
   echo "${requestedReviewer} was requested to review this Pull Request"
 }
 ```

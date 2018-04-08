@@ -2,8 +2,6 @@ package org.jenkinsci.plugins.pipeline.github;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.ReadOnlyPropertyException;
 import hudson.model.Job;
 import hudson.model.Run;
 import org.eclipse.egit.github.core.Comment;
@@ -31,6 +29,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,99 +82,158 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         this.pullRequest = pullRequestService.getPullRequest(base, pullRequestHead.getNumber());
     }
 
-    @Override
-    public Object getProperty(final String property) {
-        if (property == null) {
-            throw new MissingPropertyException("null", this.getClass());
-        }
-
-        switch (property) {
-            case "id":
-                return pullRequest.getId();
-            case "state":
-                return pullRequest.getState();
-            case "number":
-                return pullRequest.getNumber();
-            case "url":
-                return pullRequest.getHtmlUrl();
-            case "patch_url":
-                return pullRequest.getPatchUrl();
-            case "diff_url":
-                return pullRequest.getDiffUrl();
-            case "issue_url":
-                return pullRequest.getIssueUrl();
-            case "title":
-                return pullRequest.getTitle();
-            case "body":
-                return pullRequest.getBody();
-            case "locked":
-                return pullRequest.isLocked();
-
-            case "milestone":
-                return pullRequest.getMilestone().getNumber();
-            case "head":
-                return pullRequest.getHead().getSha();
-            case "base":
-                return pullRequest.getBase().getRef();
-
-            case "files":
-                return getFiles();
-            case "assignees":
-                return getAssignees();
-            case "commits":
-                return getCommits();
-            case "comments":
-                return getComments();
-            case "review_comments":
-                return getReviewComments();
-            case "labels":
-                return getLabels();
-            case "statuses":
-                return getStatuses();
-            case "requested_reviewers":
-                return getRequestedReviewers();
-
-            case "updated_at":
-                return pullRequest.getUpdatedAt();
-            case "created_at":
-                return pullRequest.getCreatedAt();
-            case "created_by":
-                return GitHubHelper.userToLogin(pullRequest.getUser());
-            case "closed_at":
-                return pullRequest.getCreatedAt();
-            case "closed_by":
-                return GitHubHelper.userToLogin(pullRequest.getClosedBy());
-            case "merged_at":
-                return pullRequest.getMergedAt();
-            case "merged_by":
-                return GitHubHelper.userToLogin(pullRequest.getMergedBy());
-
-            case "commit_count":
-                return pullRequest.getCommits();
-            case "comment_count":
-                return pullRequest.getComments();
-            case "additions":
-                return pullRequest.getAdditions();
-            case "deletions":
-                return pullRequest.getDeletions();
-            case "changed_files":
-                return pullRequest.getChangedFiles();
-
-            case "merged":
-                return pullRequest.isMerged();
-            case "mergeable":
-                return pullRequest.isMergeable();
-            case "merge_commit_sha":
-                return pullRequest.getMergeCommitSha();
-            case "maintainer_can_modify":
-                return pullRequest.isMaintainerCanModify();
-
-            default:
-                throw new MissingPropertyException(property, this.getClass());
-        }
+    @Whitelisted
+    public long getId() {
+        return pullRequest.getId();
     }
 
-    private Iterable<String> getRequestedReviewers() {
+    @Whitelisted
+    public int getNumber() {
+        return pullRequest.getNumber();
+    }
+
+    @Whitelisted
+    public String getDiffUrl() {
+        return pullRequest.getDiffUrl();
+    }
+
+    @Whitelisted
+    public String getUrl() {
+        return pullRequest.getHtmlUrl();
+    }
+
+    @Whitelisted
+    public String getPatchUrl() {
+        return pullRequest.getPatchUrl();
+    }
+
+    @Whitelisted
+    public String getState() {
+        return pullRequest.getState();
+    }
+
+    @Whitelisted
+    public String getIssueUrl() {
+        return pullRequest.getIssueUrl();
+    }
+
+    @Whitelisted
+    public String getTitle() {
+        return pullRequest.getTitle();
+    }
+
+    @Whitelisted
+    public String getBody() {
+        return pullRequest.getBody();
+    }
+
+    @Whitelisted
+    public boolean isLocked() {
+        return pullRequest.isLocked();
+    }
+
+    @Whitelisted
+    public int getMilestone() {
+        return pullRequest.getMilestone().getNumber();
+    }
+
+    @Whitelisted
+    public String getHead() {
+        return pullRequest.getHead().getSha();
+    }
+
+    @Whitelisted
+    public String getHeadRef() {
+        return pullRequest.getHead().getRef();
+    }
+
+    @Whitelisted
+    public String getBase() {
+        return pullRequest.getBase().getRef();
+    }
+
+    @Whitelisted
+    public Date getUpdatedAt() {
+        return pullRequest.getUpdatedAt();
+    }
+
+    @Whitelisted
+    public Date getCreatedAt() {
+        return pullRequest.getCreatedAt();
+    }
+
+    @Whitelisted
+    public String getCreatedBy() {
+        return GitHubHelper.userToLogin(pullRequest.getUser());
+    }
+
+    @Whitelisted
+    public Date getClosedAt() {
+        return pullRequest.getCreatedAt();
+    }
+
+    @Whitelisted
+    public String getClosedBy() {
+        return GitHubHelper.userToLogin(pullRequest.getClosedBy());
+    }
+
+    @Whitelisted
+    public Date getMergedAt() {
+        return pullRequest.getMergedAt();
+    }
+
+    @Whitelisted
+    public String getMergedBy() {
+        return GitHubHelper.userToLogin(pullRequest.getMergedBy());
+    }
+
+    @Whitelisted
+    public int getCommitCount() {
+        return pullRequest.getCommits();
+    }
+
+    @Whitelisted
+    public int getCommentCount() {
+        return pullRequest.getComments();
+    }
+
+    @Whitelisted
+    public int getDeletions() {
+        return pullRequest.getDeletions();
+    }
+
+    @Whitelisted
+    public String getMergeCommitSha() {
+        return pullRequest.getMergeCommitSha();
+    }
+
+    @Whitelisted
+    public boolean isMaintainerCanModify() {
+        return pullRequest.isMaintainerCanModify();
+    }
+
+    @Whitelisted
+    public int getAdditions() {
+        return pullRequest.getAdditions();
+    }
+
+    @Whitelisted
+    public int getChangedFiles() {
+        return pullRequest.getChangedFiles();
+    }
+
+    @Whitelisted
+    public boolean isMergeable() {
+        return pullRequest.isMergeable();
+    }
+
+    @Whitelisted
+    public boolean isMerged() {
+        return pullRequest.isMerged();
+    }
+
+    @Whitelisted
+    public Iterable<String> getRequestedReviewers() {
         Stream<String> stream = StreamSupport
                 .stream(pullRequestService.pageRequestedReviewers(base, pullRequest.getNumber())
                         .spliterator(), false)
@@ -185,7 +243,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         return stream::iterator;
     }
 
-    private List<CommitStatusGroovyObject> getStatuses() {
+    @Whitelisted
+    public List<CommitStatusGroovyObject> getStatuses() {
         try {
             return commitService.getStatuses(base, pullRequest.getHead().getSha())
                     .stream()
@@ -196,7 +255,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private Iterable<String> getLabels() {
+    @Whitelisted
+    public Iterable<String> getLabels() {
         Stream<String> stream = StreamSupport
                 .stream(issueService.getLabels(base, pullRequest.getNumber())
                         .spliterator(), false)
@@ -206,14 +266,16 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         return stream::iterator;
     }
 
-    private List<String> getAssignees() {
+    @Whitelisted
+    public List<String> getAssignees() {
         return pullRequest.getAssignees()
                 .stream()
                 .map(User::getLogin)
                 .collect(toList());
     }
 
-    private Iterable<CommitGroovyObject> getCommits() {
+    @Whitelisted
+    public Iterable<CommitGroovyObject> getCommits() {
         try {
             Stream<CommitGroovyObject> steam = pullRequestService
                     .getCommits(base, pullRequestHead.getNumber())
@@ -226,7 +288,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private Iterable<IssueCommentGroovyObject> getComments() {
+    @Whitelisted
+    public Iterable<IssueCommentGroovyObject> getComments() {
         try {
             Stream<IssueCommentGroovyObject> stream = issueService
                     .getComments(base, pullRequestHead.getNumber())
@@ -239,7 +302,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private Iterable<ReviewCommentGroovyObject> getReviewComments() {
+    @Whitelisted
+    public Iterable<ReviewCommentGroovyObject> getReviewComments() {
         Stream<ReviewCommentGroovyObject> stream = StreamSupport
                 .stream(pullRequestService.pageComments2(base,
                         pullRequestHead.getNumber()).spliterator(), false)
@@ -248,7 +312,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         return stream::iterator;
     }
 
-    private List<CommitFileGroovyObject> getFiles() {
+    @Whitelisted
+    public List<CommitFileGroovyObject> getFiles() {
         try {
             return pullRequestService.getFiles(base, pullRequestHead.getNumber())
                     .stream()
@@ -259,92 +324,12 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    @Override
-    public void setProperty(final String property, final Object newValue) {
-        if (property == null) {
-            throw new MissingPropertyException("null", this.getClass());
-        }
-
-        switch (property) {
-            // writable properties
-            case "state":
-                Objects.requireNonNull(newValue, "state cannot be null");
-                setState(newValue.toString());
-                break;
-            case "title":
-                Objects.requireNonNull(newValue, "title cannot be null");
-                setTitle(newValue.toString());
-                break;
-            case "body":
-                Objects.requireNonNull(newValue, "body cannot be null");
-                setBody(newValue.toString());
-                break;
-            case "base":
-                Objects.requireNonNull(newValue, "base cannot be null");
-                setBase(newValue.toString());
-                break;
-            case "locked":
-                Objects.requireNonNull(newValue, "locked cannot be null");
-                setLocked(Boolean.valueOf(newValue.toString()));
-                break;
-            case "labels":
-                setLabels(newValue);
-                break;
-            case "milestone":
-//                setMilestone(Integer.valueOf(newValue.toString()));
-                break;
-            case "maintainer_can_modify":
-                Objects.requireNonNull(newValue, "maintainer_can_modify cannot be null");
-                setMaintainerCanModify(Boolean.valueOf(newValue.toString()));
-                break;
-
-            // read only properties
-            case "id":
-            case "number":
-            case "url":
-            case "patch_url":
-            case "diff_url":
-            case "issue_url":
-
-            case "head":
-
-            case "files":
-            case "assignees":
-            case "commits":
-            case "comments":
-            case "review_comments":
-            case "statuses":
-            case "requested_reviewers":
-
-            case "updated_at":
-            case "created_at":
-            case "created_by":
-            case "closed_at":
-            case "closed_by":
-            case "merged_at":
-            case "merged_by":
-
-            case "commit_count":
-            case "comment_count":
-            case "additions":
-            case "deletions":
-            case "changed_files":
-            case "merged":
-            case "mergeable":
-            case "merge_commit_sha":
-                throw new ReadOnlyPropertyException(property, this.getClass());
-
-            // unknown properties
-            default:
-                throw new MissingPropertyException(property, this.getClass());
-        }
-    }
-
-    private void setMilestone(final int milestoneNumber) {
+    public void setMilestone(final int milestoneNumber) {
         // todo
     }
 
-    private void setLocked(final boolean locked) {
+    @Whitelisted
+    public void setLocked(final boolean locked) {
         try {
             if (locked) {
                 issueService.lockIssue(base, pullRequest.getNumber());
@@ -356,7 +341,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setTitle(final String title) {
+    @Whitelisted
+    public void setTitle(final String title) {
+        Objects.requireNonNull(title, "title cannot be null");
+
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setTitle(title);
@@ -367,7 +355,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setBody(final String body) {
+    @Whitelisted
+    public void setBody(final String body) {
+        Objects.requireNonNull(body, "body cannot be null");
+
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBody(body);
@@ -378,7 +369,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setState(final String state) {
+    @Whitelisted
+    public void setState(final String state) {
+        Objects.requireNonNull(state, "state cannot be null");
+
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setState(state);
@@ -389,7 +383,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setBase(final String newBase) {
+    @Whitelisted
+    public void setBase(final String newBase) {
+        Objects.requireNonNull(newBase, "base cannot be null");
+
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBase(new PullRequestMarker().setRef(newBase));
@@ -400,7 +397,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setMaintainerCanModify(final boolean value) {
+    @Whitelisted
+    public void setMaintainerCanModify(final boolean value) {
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setMaintainerCanModify(value);
@@ -411,36 +409,20 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
-    private void setLabels(final Object labels) {
-        if (labels == null) {
-            setLabels(null);
-        } else if (labels instanceof Collection) {
-            @SuppressWarnings("unchecked")
-            List<String> temp = ((Collection<Object>)labels)
-                    .stream()
-                    .map(Object::toString)
-                    .collect(toList());
-            setLabels(temp);
-        } else {
-            throw new IllegalArgumentException("must be of type Collection<String>");
-        }
-    }
-
-    private void setLabels(List<String> labels) {
+    @Whitelisted
+    public void setLabels(List<String> labels) {
         if (labels == null) {
             labels = Collections.emptyList();
         }
         try {
-            issueService.setLabels(base,
-                    pullRequest.getNumber(),
-                    labels.toArray(new String[labels.size()]));
+            issueService.setLabels(base, pullRequest.getNumber(), labels);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     @Whitelisted
-    public void createReviewRequests(final String...reviewers) {
+    public void createReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
             pullRequestService.createReviewRequests(base, pullRequest.getNumber(), reviewers);
@@ -450,7 +432,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public void deleteReviewRequests(final String...reviewers) {
+    public void deleteReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
             pullRequestService.deleteReviewRequests(base, pullRequest.getNumber(), reviewers);
@@ -460,7 +442,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public void addLabels(final String...labels) {
+    public void addLabels(final List<String> labels) {
         Objects.requireNonNull(labels, "labels is a required argument");
         try {
             issueService.addLabels(base, pullRequest.getNumber(), labels);
@@ -480,7 +462,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public void addAssignees(final String...assignees) {
+    public void addAssignees(final List<String> assignees) {
         Objects.requireNonNull(assignees, "assignees is a required argument");
         try {
             issueService.addAssignees(base, pullRequest.getNumber(), assignees);
@@ -490,7 +472,17 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public void removeAssignees(final String...assignees) {
+    public void setAssignees(final List<String> assignees) {
+        Objects.requireNonNull(assignees, "assignees is a required argument");
+        try {
+            issueService.setAssignees(base, pullRequest.getNumber(), assignees);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Whitelisted
+    public void removeAssignees(final List<String> assignees) {
         Objects.requireNonNull(assignees, "assignees is a required argument");
         try {
             issueService.removeAssignees(base, pullRequest.getNumber(), assignees);
