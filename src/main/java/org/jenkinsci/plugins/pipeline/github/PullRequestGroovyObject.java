@@ -138,6 +138,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public String getMilestoneTitle() {
+        return pullRequest.getMilestone().getTitle();
+    }
+
+    @Whitelisted
     public String getHead() {
         return pullRequest.getHead().getSha();
     }

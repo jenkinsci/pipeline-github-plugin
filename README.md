@@ -174,6 +174,7 @@ title | `String` | **true**
 body | `String` | **true**
 locked | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
 milestone | `Integer` | **true**
+milestoneTitle | `String` | false | Title of the milestone set on this pull request
 head | `String` | false | Revision (SHA) of the head commit of this pull request
 headRef | `String` | false | Name of the branch this pull request is created for
 base | `String` | **true** | Name of the base branch in the current repository this pull request targets
