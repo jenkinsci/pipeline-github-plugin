@@ -300,7 +300,7 @@ Name | Type | Setter | Description
 -----|------|----------|------------
 sha | `String` | false
 filename | `String` | false
-status | `String` | false | One of
+status | `String` | false
 patch | `String` | false
 additions | `Integer` | false
 deletions | `Integer` | false
