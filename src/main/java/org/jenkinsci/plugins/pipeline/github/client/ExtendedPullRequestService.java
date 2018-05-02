@@ -19,8 +19,6 @@ import java.util.Objects;
  */
 public class ExtendedPullRequestService extends PullRequestService {
 
-    private static final String BLACK_CAT_PREVIEW = "application/vnd.github.black-cat-preview+json";
-
     public ExtendedPullRequestService(final ExtendedGitHubClient client) {
         super(client);
     }
@@ -166,7 +164,6 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         PagedRequest<User> request = this.createPagedRequest(1, 100);
-        request.setResponseContentType(BLACK_CAT_PREVIEW);
         request.setUri(uri);
         request.setType((new TypeToken<List<User>>(){}).getType());
         return this.createPageIterator(request);
@@ -186,7 +183,7 @@ public class ExtendedPullRequestService extends PullRequestService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("reviewers", reviewers);
-        getClient().post(uri.toString(), params, ExtendedPullRequest.class, BLACK_CAT_PREVIEW);
+        getClient().post(uri.toString(), params, ExtendedPullRequest.class);
     }
 
     public void deleteReviewRequests(final IRepositoryIdProvider repository,
@@ -203,6 +200,6 @@ public class ExtendedPullRequestService extends PullRequestService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("reviewers", reviewers);
-        getClient().delete(uri.toString(), params, BLACK_CAT_PREVIEW);
+        getClient().delete(uri.toString(), params);
     }
 }
