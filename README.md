@@ -93,6 +93,12 @@ pipeline {
 ```
 
 #### Detecting whether a build was started by the trigger in a script:
+
+Note that the following uses `currentBuild.rawBuild` and should therefore only
+be done in a `@NonCPS` context. See [the workflow-cps-plugin Technical Design
+](https://github.com/jenkinsci/workflow-cps-plugin/blob/master/README.md#technical-design)
+for more information.
+
 ```groovy
 def triggerCause = currentBuild.rawBuild.getCause(
     org.jenkinsci.plugins.pipeline.github.trigger.IssueCommentCause
