@@ -258,7 +258,7 @@ Name | Type | Setter | Description
 -----|------|----------|------------
 id | `String` | false |
 url | `String` | false
-status | `String` | false | One of `pending`, `success`, `failure` or `error`
+state | `String` | false | One of `pending`, `success`, `failure` or `error`
 context | `String` | false
 description | `String` | false
 targetUrl | `String` | false
@@ -511,7 +511,7 @@ for (reviewComment in pullRequest.reviewComments) {
 ```groovy
 for (commit in pullRequest.commits) {
   for (status  in commit.statuses) {
-     echo "Commit: ${commit.sha}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
+     echo "Commit: ${commit.sha}, State: ${status.state}, Context: ${status.context}, URL: ${status.targetUrl}"
   }
 }
 ```
@@ -526,7 +526,7 @@ for (commit in pullRequest.commits) {
 ### Listing a Pull Request's current statuses
 ```groovy
 for (status in pullRequest.statuses) {
-  echo "Commit: ${pullRequest.head}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
+  echo "Commit: ${pullRequest.head}, State: ${status.state}, Context: ${status.context}, URL: ${status.targetUrl}"
 }
 ```
 
