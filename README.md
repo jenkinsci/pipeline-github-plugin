@@ -185,6 +185,7 @@ reviewComments | `Iterable<ReviewComment>` | false
 labels | `Iterable<String>` | **true** | Accepts a `List<String>`
 statuses | `List<CommitStatus>` | false 
 requestedReviewers | `Iterable<String>` | false
+reviews | `Iterable<Review>` | false
 updatedAt | `Date` | false
 createdAt | `Date` | false
 createdBy | `String` | false
@@ -345,6 +346,18 @@ diffHunk | `String` | false
 ### Methods
 > void delete()
 
+
+## Review
+### Properties
+Name | Type | Setter | Description
+-----|------|----------|------------
+id | `long` | false
+user | `String` | false
+body | `String` | false
+state | `String` | One of APPROVED, PENDING, CHANGES_REQUESTED, DISMISSED, COMMENTED
+
+### Methods
+None.
 
 # Examples
 
@@ -521,6 +534,13 @@ for (status in pullRequest.statuses) {
 ```groovy
 for (requestedReviewer in pullRequest.requestedReviewers) {
   echo "${requestedReviewer} was requested to review this Pull Request"
+}
+```
+
+### Listing a Pull Request's reviews
+```groovy
+for (review in pullRequest.reviews) {
+  echo "${review.user} has a review in ${review.state} state for Pull Request. Review body: ${review.body}"
 }
 ```
 

@@ -169,6 +169,20 @@ public class ExtendedPullRequestService extends PullRequestService {
         return this.createPageIterator(request);
     }
 
+    public PageIterator<Review> pageReviews(final IRepositoryIdProvider repository, final int id) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/pulls");
+        uri.append('/').append(id);
+        uri.append("/reviews");
+
+        PagedRequest<Review> request = this.createPagedRequest(1, 100);
+        request.setUri(uri);
+        request.setType((new TypeToken<List<Review>>(){}).getType());
+        return this.createPageIterator(request);
+    }
+
     public void createReviewRequests(final IRepositoryIdProvider repository,
                                      final int id,
                                      final List<String> reviewers) throws IOException {
