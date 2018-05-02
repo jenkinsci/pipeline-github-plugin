@@ -137,7 +137,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/pulls");
         uri.append('/').append(pullRequestId);
         uri.append("/comments");
-        Map<String, String> params = new HashMap();
+        Map<String, String> params = new HashMap<>();
         params.put("in_reply_to", Integer.toString(commentId));
         params.put("body", body);
         return (ExtendedCommitComment)this.client.post(uri.toString(), params, ExtendedCommitComment.class);
