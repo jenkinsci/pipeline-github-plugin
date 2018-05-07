@@ -360,6 +360,7 @@ Name | Type | Setter | Description
 id | `long` | false
 user | `String` | false
 body | `String` | false
+commitId | `String` | false
 state | `String` | One of APPROVED, PENDING, CHANGES_REQUESTED, DISMISSED, COMMENTED
 
 ### Methods

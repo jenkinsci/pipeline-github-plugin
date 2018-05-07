@@ -23,6 +23,7 @@ public class Review implements Serializable {
         .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
 
     private String body;
+    private String commitId;
     private long id;
     private User user;
     private String state;
@@ -33,6 +34,15 @@ public class Review implements Serializable {
 
     public Review setBody(final String body) {
         this.body = body;
+        return this;
+    }
+
+    public String getCommitId() {
+        return commitId;
+    }
+
+    public Review setCommitId(final String commitId) {
+        this.commitId = commitId;
         return this;
     }
 

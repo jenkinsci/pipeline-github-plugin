@@ -27,6 +27,11 @@ public class ReviewGroovyObject extends GroovyObjectSupport {
     }
 
     @Whitelisted
+    public String getCommitId() {
+        return review.getCommitId();
+    }
+
+    @Whitelisted
     public long getId() {
         return review.getId();
     }
