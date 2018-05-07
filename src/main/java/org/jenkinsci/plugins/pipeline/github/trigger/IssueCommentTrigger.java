@@ -65,7 +65,7 @@ public class IssueCommentTrigger extends Trigger<WorkflowJob> {
                 scmHead.getNumber());
     }
 
-    String getCommentPattern() {
+    public String getCommentPattern() {
         return commentPattern;
     }
 
