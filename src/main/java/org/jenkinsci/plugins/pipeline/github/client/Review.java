@@ -2,6 +2,10 @@ package org.jenkinsci.plugins.pipeline.github.client;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.egit.github.core.User;
 
@@ -13,6 +17,10 @@ public class Review implements Serializable {
     public static final String STATE_CHANGES_REQUESTED = "CHANGES_REQUESTED";
     public static final String STATE_DISMISSED = "DISMISSED";
     public static final String STATE_COMMENTED = "COMMENTED";
+
+    private static final Set<String> reviewStates = Stream
+        .of(STATE_APPROVED, STATE_PENDING, STATE_CHANGES_REQUESTED, STATE_DISMISSED, STATE_COMMENTED)
+        .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
 
     private String body;
     private long id;
@@ -56,8 +64,7 @@ public class Review implements Serializable {
      * throws {@link IllegalArgumentException} if state is invalid
      */
     public Review setState(final String state) {
-        if (STATE_APPROVED.equals(state) || STATE_PENDING.equals(state) || STATE_CHANGES_REQUESTED.equals(state)
-                || STATE_DISMISSED.equals(state) || STATE_COMMENTED.equals(state)) {
+        if (reviewStates.contains(state)) {
             this.state = state;
             return this;
         }
