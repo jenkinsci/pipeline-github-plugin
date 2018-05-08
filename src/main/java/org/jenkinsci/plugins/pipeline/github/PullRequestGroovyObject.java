@@ -244,6 +244,17 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public Iterable<ReviewGroovyObject> getReviews() {
+        Stream<ReviewGroovyObject> stream = StreamSupport
+            .stream(pullRequestService.pageReviews(base, pullRequest.getNumber())
+                    .spliterator(), false)
+            .flatMap(Collection::stream)
+            .map(ReviewGroovyObject::new);
+
+        return stream::iterator;
+    }
+
+    @Whitelisted
     public List<CommitStatusGroovyObject> getStatuses() {
         try {
             return commitService.getStatuses(base, pullRequest.getHead().getSha())

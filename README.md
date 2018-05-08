@@ -18,7 +18,7 @@ Table of Contents
 
 
 # Pipeline: GitHub
-The entry points for this plugin’s functionality are additional global variables, available to pipeline scripts when the plugin is enabled and the prerequisites are met. 
+The entry points for this plugin’s functionality are additional global variables, available to pipeline scripts when the plugin is enabled and the prerequisites are met.
 
 # License
 MIT
@@ -27,13 +27,13 @@ MIT
 
 - Jenkins running Java 8 or higher.
 
-- Projects/jobs must be automatically created by the GitHub Organization folder/project type. 
+- Projects/jobs must be automatically created by the GitHub Organization folder/project type.
 
 See: [GitHub Branch Source Plugin](https://go.cloudbees.com/docs/cloudbees-documentation/cje-user-guide/index.html#github-branch-source)
 
 # Credentials
 
-Currently all operations against GitHub will be performed using the builds `GitHubSCMSource` credentials. These will typically be the `Scan Credentials` you configured in your GitHub Organization. 
+Currently all operations against GitHub will be performed using the builds `GitHubSCMSource` credentials. These will typically be the `Scan Credentials` you configured in your GitHub Organization.
 
 However you can override this in a pipeline script by calling `setCredentials(String userName, String password)` before any properties or methods are accessed/invoked on the `pullRequest` global variable.
 
@@ -56,15 +56,15 @@ This plugin adds the following pipeline triggers
 
 ### Limitations
 
-The Pull Request's job/build must have run at least once for the trigger to be registered. If an initial run never takes place then the trigger won't be registered and cannot pickup on any comments made. 
+The Pull Request's job/build must have run at least once for the trigger to be registered. If an initial run never takes place then the trigger won't be registered and cannot pickup on any comments made.
 
-This should not be an issue in practice, because a requirement of using this plugin is that your jobs are setup automatically by the GitHub Branch Source Plugin, which will trigger an initial build when it is notified of a new Pull Request. 
+This should not be an issue in practice, because a requirement of using this plugin is that your jobs are setup automatically by the GitHub Branch Source Plugin, which will trigger an initial build when it is notified of a new Pull Request.
 
 ### Considerations
 
 This trigger would be of limited usefulness for people wishing to build public GitHub/Jenkins bots, using pipeline scripts. As there is no way to ensure that a Pull Request's `Jenkinsfile` contains any triggers. Not to mention you would not want to trust just any `Jenkinsfile` from a random Pull Request/non-collaborator.
 
-This trigger is intended to be used inside enterprise organizations: 
+This trigger is intended to be used inside enterprise organizations:
 1. Where all branches and forks just contain a token `Jenkinsfile` that delegates to the real pipeline script, using [shared libraries](https://jenkins.io/doc/book/pipeline/shared-libraries/).
 2. Trust all their Pull Request authors.
 
@@ -93,6 +93,12 @@ pipeline {
 ```
 
 #### Detecting whether a build was started by the trigger in a script:
+
+Note that the following uses `currentBuild.rawBuild` and should therefore only
+be done in a `@NonCPS` context. See [the workflow-cps-plugin Technical Design
+](https://github.com/jenkinsci/workflow-cps-plugin/blob/master/README.md#technical-design)
+for more information.
+
 ```groovy
 def triggerCause = currentBuild.rawBuild.getCause(
     org.jenkinsci.plugins.pipeline.github.trigger.IssueCommentCause
@@ -163,7 +169,7 @@ pipeline {
 
 Name | Type | Setter   | Description
 -----|------|----------|------------
-id | `Integer` | false | 
+id | `Integer` | false |
 state | `String` | **true** | Valid values `open` or `closed`
 number | `Integer` | false
 url | `String` | false
@@ -183,8 +189,9 @@ commits | `Iterable<Commit>` | false
 comments | `Iterable<IssueComment>` | false
 reviewComments | `Iterable<ReviewComment>` | false
 labels | `Iterable<String>` | **true** | Accepts a `List<String>`
-statuses | `List<CommitStatus>` | false 
+statuses | `List<CommitStatus>` | false
 requestedReviewers | `Iterable<String>` | false
+reviews | `Iterable<Review>` | false
 updatedAt | `Date` | false
 createdAt | `Date` | false
 createdBy | `String` | false
@@ -255,9 +262,9 @@ Returns the merge's SHA/commit id.
 ### Properties
 Name | Type | Setter | Description
 -----|------|----------|------------
-id | `String` | false | 
+id | `String` | false |
 url | `String` | false
-status | `String` | false | One of `pending`, `success`, `failure` or `error`
+state | `String` | false | One of `pending`, `success`, `failure` or `error`
 context | `String` | false
 description | `String` | false
 targetUrl | `String` | false
@@ -279,7 +286,7 @@ committer | `String` | false
 parents | `List<String>` | false | List of parent commit SHA's
 message | `String` | false |
 commentCount | `Integer` | false
-comments | `Iterable<ReviewComment>` | false 
+comments | `Iterable<ReviewComment>` | false
 additions | `Integer` | false
 deletions | `Integer` | false
 totalChanges | `Integer` | false
@@ -299,7 +306,7 @@ Name | Type | Setter | Description
 -----|------|----------|------------
 sha | `String` | false
 filename | `String` | false
-status | `String` | false | One of 
+status | `String` | false
 patch | `String` | false
 additions | `Integer` | false
 deletions | `Integer` | false
@@ -345,6 +352,19 @@ diffHunk | `String` | false
 ### Methods
 > void delete()
 
+
+## Review
+### Properties
+Name | Type | Setter | Description
+-----|------|----------|------------
+id | `long` | false
+user | `String` | false
+body | `String` | false
+commitId | `String` | false
+state | `String` | One of APPROVED, PENDING, CHANGES_REQUESTED, DISMISSED, COMMENTED
+
+### Methods
+None.
 
 # Examples
 
@@ -491,14 +511,14 @@ for (comment in pullRequest.comments) {
 ```groovy
 for (reviewComment in pullRequest.reviewComments) {
   echo "File: ${reviewComment.path}, Line: ${reviewComment.line}, Author: ${reviewComment.user}, Comment: ${reviewComment.body}"
-} 
+}
 ```
 
 ### Listing a commit's statuses
 ```groovy
 for (commit in pullRequest.commits) {
   for (status  in commit.statuses) {
-     echo "Commit: ${commit.sha}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
+     echo "Commit: ${commit.sha}, State: ${status.state}, Context: ${status.context}, URL: ${status.targetUrl}"
   }
 }
 ```
@@ -513,7 +533,7 @@ for (commit in pullRequest.commits) {
 ### Listing a Pull Request's current statuses
 ```groovy
 for (status in pullRequest.statuses) {
-  echo "Commit: ${pullRequest.head}, Status: ${status.status}, Context: ${status.context}, URL: ${status.targetUrl}"
+  echo "Commit: ${pullRequest.head}, State: ${status.state}, Context: ${status.context}, URL: ${status.targetUrl}"
 }
 ```
 
@@ -521,6 +541,13 @@ for (status in pullRequest.statuses) {
 ```groovy
 for (requestedReviewer in pullRequest.requestedReviewers) {
   echo "${requestedReviewer} was requested to review this Pull Request"
+}
+```
+
+### Listing a Pull Request's reviews
+```groovy
+for (review in pullRequest.reviews) {
+  echo "${review.user} has a review in ${review.state} state for Pull Request. Review body: ${review.body}"
 }
 ```
 

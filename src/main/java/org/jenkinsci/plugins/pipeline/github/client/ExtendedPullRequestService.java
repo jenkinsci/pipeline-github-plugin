@@ -19,8 +19,6 @@ import java.util.Objects;
  */
 public class ExtendedPullRequestService extends PullRequestService {
 
-    private static final String BLACK_CAT_PREVIEW = "application/vnd.github.black-cat-preview+json";
-
     public ExtendedPullRequestService(final ExtendedGitHubClient client) {
         super(client);
     }
@@ -139,7 +137,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/pulls");
         uri.append('/').append(pullRequestId);
         uri.append("/comments");
-        Map<String, String> params = new HashMap();
+        Map<String, String> params = new HashMap<>();
         params.put("in_reply_to", Integer.toString(commentId));
         params.put("body", body);
         return (ExtendedCommitComment)this.client.post(uri.toString(), params, ExtendedCommitComment.class);
@@ -166,9 +164,22 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         PagedRequest<User> request = this.createPagedRequest(1, 100);
-        request.setResponseContentType(BLACK_CAT_PREVIEW);
         request.setUri(uri);
         request.setType((new TypeToken<List<User>>(){}).getType());
+        return this.createPageIterator(request);
+    }
+
+    public PageIterator<Review> pageReviews(final IRepositoryIdProvider repository, final int id) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/pulls");
+        uri.append('/').append(id);
+        uri.append("/reviews");
+
+        PagedRequest<Review> request = this.createPagedRequest(1, 100);
+        request.setUri(uri);
+        request.setType((new TypeToken<List<Review>>(){}).getType());
         return this.createPageIterator(request);
     }
 
@@ -186,7 +197,7 @@ public class ExtendedPullRequestService extends PullRequestService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("reviewers", reviewers);
-        getClient().post(uri.toString(), params, ExtendedPullRequest.class, BLACK_CAT_PREVIEW);
+        getClient().post(uri.toString(), params, ExtendedPullRequest.class);
     }
 
     public void deleteReviewRequests(final IRepositoryIdProvider repository,
@@ -203,6 +214,6 @@ public class ExtendedPullRequestService extends PullRequestService {
 
         Map<String, Object> params = new HashMap<>();
         params.put("reviewers", reviewers);
-        getClient().delete(uri.toString(), params, BLACK_CAT_PREVIEW);
+        getClient().delete(uri.toString(), params);
     }
 }
