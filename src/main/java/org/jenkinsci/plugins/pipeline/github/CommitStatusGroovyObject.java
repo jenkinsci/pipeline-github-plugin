@@ -6,6 +6,7 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Groovy wrapper over a {@link CommitStatus}
@@ -19,6 +20,8 @@ public class CommitStatusGroovyObject extends GroovyObjectSupport implements Ser
     private final CommitStatus commitStatus;
 
     CommitStatusGroovyObject(final CommitStatus commitStatus) {
+        Objects.requireNonNull(commitStatus, "commitStatus cannot be null");
+
         this.commitStatus = commitStatus;
     }
 

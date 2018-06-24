@@ -502,11 +502,13 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public CommitStatusGroovyObject createStatus(final Map<String, String> params) {
-        return createStatus(params.get("status"),
-                            params.get("context"),
-                            params.get("description"),
-                            params.get("targetUrl"));
+    public CommitStatusGroovyObject createStatus(final Map<String, Object> params) {
+        Objects.requireNonNull(params.get("status"), "status is a required argument");
+
+        return createStatus(params.get("status").toString(),
+                            params.get("context") != null ? params.get("context").toString() : null,
+                            params.get("description") != null ? params.get("description").toString() : null,
+                            params.get("targetUrl") != null ? params.get("targetUrl").toString() : null);
     }
 
     @Whitelisted
@@ -630,11 +632,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public String merge(final Map<String, String> params) {
-        return merge(params.get("commitTitle"),
-                params.get("commitMessage"),
-                params.get("sha"),
-                params.get("mergeMethod"));
+    public String merge(final Map<String, Object> params) {
+        return merge(params.get("commitTitle") != null ? params.get("commitTitle").toString() : null,
+                     params.get("commitMessage") != null ? params.get("commitMessage").toString() : null,
+                     params.get("sha") != null ? params.get("sha").toString() : null,
+                     params.get("mergeMethod") != null ? params.get("mergeMethod").toString() : null);
     }
 
     @Whitelisted

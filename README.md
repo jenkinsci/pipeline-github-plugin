@@ -100,9 +100,7 @@ be done in a `@NonCPS` context. See [the workflow-cps-plugin Technical Design
 for more information.
 
 ```groovy
-def triggerCause = currentBuild.rawBuild.getCause(
-    org.jenkinsci.plugins.pipeline.github.trigger.IssueCommentCause
-)
+def triggerCause = currentBuild.rawBuild.getCause(org.jenkinsci.plugins.pipeline.github.trigger.IssueCommentCause)
 
 if (triggerCause) {
     echo("Build was started by ${triggerCause.userLogin}, who wrote: " +
@@ -184,12 +182,12 @@ head | `String` | false | Revision (SHA) of the head commit of this pull request
 headRef | `String` | false | Name of the branch this pull request is created for
 base | `String` | **true** | Name of the base branch in the current repository this pull request targets
 files | `Iterable<CommitFile>` | false
-assignees | `List<String>` | **true** | Accepts a `List<String>`
+assignees | `Iterable<String>` | **true** | Accepts a `List<String>`
 commits | `Iterable<Commit>` | false
 comments | `Iterable<IssueComment>` | false
 reviewComments | `Iterable<ReviewComment>` | false
 labels | `Iterable<String>` | **true** | Accepts a `List<String>`
-statuses | `List<CommitStatus>` | false
+statuses | `Iterable<CommitStatus>` | false
 requestedReviewers | `Iterable<String>` | false
 reviews | `Iterable<Review>` | false
 updatedAt | `Date` | false
@@ -283,15 +281,15 @@ sha | `String` | false
 url | `String` | false
 author | `String` | false
 committer | `String` | false
-parents | `List<String>` | false | List of parent commit SHA's
+parents | `Iterable<String>` | false | List of parent commit SHA's
 message | `String` | false |
 commentCount | `Integer` | false
 comments | `Iterable<ReviewComment>` | false
 additions | `Integer` | false
 deletions | `Integer` | false
 totalChanges | `Integer` | false
-files | `List<CommitFile>` | false | List of files added, removed and or modified in this commit
-statuses | `List<CommitStatus>` | false | List of statuses associated with this commit
+files | `Iterable<CommitFile>` | false | List of files added, removed and or modified in this commit
+statuses | `Iterable<CommitStatus>` | false | List of statuses associated with this commit
 
 ### Methods
 #### Commit Status
@@ -386,7 +384,7 @@ pullRequest.status = 'closed'
 pullRequest.createStatus(status: 'success',
                          context: 'continuous-integration/jenkins/pr-merge/tests',
                          description: 'All tests are passing',
-                         targetUrl: "${JOB_URL}/testResults")
+                         targetUrl: "${env.JOB_URL}/testResults")
 ```
 
 ### Locking and unlocking a Pull Request's conversation

@@ -5,6 +5,7 @@ import org.eclipse.egit.github.core.CommitFile;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Groovy wrapper over a {@link CommitFile}.
@@ -18,6 +19,8 @@ public class CommitFileGroovyObject extends GroovyObjectSupport implements Seria
     private final CommitFile file;
 
     CommitFileGroovyObject(final CommitFile file) {
+        Objects.requireNonNull(file, "file cannot be null");
+
         this.file = file;
     }
 

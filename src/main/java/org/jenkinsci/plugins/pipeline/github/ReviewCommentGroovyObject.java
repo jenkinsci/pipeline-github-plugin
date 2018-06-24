@@ -33,6 +33,10 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
     ReviewCommentGroovyObject(final ExtendedCommitComment commitComment,
                               final RepositoryId base,
                               final ExtendedCommitService commitService) {
+        Objects.requireNonNull(commitComment, "commitComment cannot be null");
+        Objects.requireNonNull(base, "base cannot be null");
+        Objects.requireNonNull(commitService, "commitService cannot be null");
+
         this.commitComment = commitComment;
         this.base = base;
         this.commitService = commitService;

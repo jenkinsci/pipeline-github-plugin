@@ -1,11 +1,11 @@
 package org.jenkinsci.plugins.pipeline.github;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import groovy.lang.GroovyObjectSupport;
 import org.jenkinsci.plugins.pipeline.github.client.Review;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Groovy wrapper for PR reviews
@@ -16,6 +16,8 @@ public class ReviewGroovyObject extends GroovyObjectSupport implements Serializa
     private final Review review;
 
     ReviewGroovyObject(final Review review) {
+        Objects.requireNonNull(review, "review cannot be null");
+
         this.review = review;
     }
 

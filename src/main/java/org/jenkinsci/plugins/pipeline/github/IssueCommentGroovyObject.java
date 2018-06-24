@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Groovy wrapper over a {@link Comment}
@@ -29,6 +30,10 @@ public class IssueCommentGroovyObject extends GroovyObjectSupport implements Ser
     private Comment comment;
 
     IssueCommentGroovyObject(final Comment comment, final RepositoryId base, final IssueService issueService) {
+        Objects.requireNonNull(comment, "comment cannot be null");
+        Objects.requireNonNull(base, "base cannot be null");
+        Objects.requireNonNull(issueService, "issueService cannot be null");
+
         this.comment = comment;
         this.base = base;
         this.issueService = issueService;

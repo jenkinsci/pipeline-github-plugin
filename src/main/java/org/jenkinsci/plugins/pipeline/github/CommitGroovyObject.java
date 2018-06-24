@@ -47,6 +47,10 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
     CommitGroovyObject(final RepositoryCommit commit,
                        final ExtendedCommitService commitService,
                        final RepositoryId base) {
+        Objects.requireNonNull(commit, "commit cannot be null");
+        Objects.requireNonNull(commitService, "commitService cannot be null");
+        Objects.requireNonNull(base, "base cannot be null");
+
         this.commit = commit;
         this.commitService = commitService;
         this.base = base;
@@ -136,8 +140,10 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
 
     @Whitelisted
     public ReviewCommentGroovyObject comment(final Map<String, Object> params) {
-        return comment((String)params.get("body"),
-                       (String)params.get("path"),
+        Objects.requireNonNull(params.get("body"), "body is a required argument");
+
+        return comment(params.get("body").toString(),
+                       params.get("path") != null ? params.get("path").toString() : null,
                        (Integer)params.get("position"));
     }
 
@@ -162,11 +168,13 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
     }
 
     @Whitelisted
-    public CommitStatusGroovyObject createStatus(final Map<String, String> params) {
-        return createStatus(params.get("status"),
-                            params.get("context"),
-                            params.get("description"),
-                            params.get("targetUrl"));
+    public CommitStatusGroovyObject createStatus(final Map<String, Object> params) {
+        Objects.requireNonNull(params.get("status"), "status is a required argument");
+
+        return createStatus(params.get("status").toString(),
+                            params.get("context") != null ? params.get("context").toString() : null,
+                            params.get("description") != null ? params.get("description").toString() : null,
+                            params.get("targetUrl") != null ? params.get("targetUrl").toString() : null);
     }
 
     @Whitelisted
