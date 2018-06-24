@@ -96,7 +96,7 @@ public class GitHubHelper {
     public static PullRequestSCMHead getPullRequest(@Nonnull final Job job) throws Exception {
         PullRequestSCMHead head = (PullRequestSCMHead) SCMHead.HeadByItem.findHead(job);
         if (head == null) {
-            throw new IllegalStateException("Build is not a pull request");
+            throw new IllegalStateException("Build is not a Pull Request");
         }
         return head;
     }
