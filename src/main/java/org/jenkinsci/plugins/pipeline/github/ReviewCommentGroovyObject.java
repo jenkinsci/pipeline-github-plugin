@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitComment;
@@ -7,6 +8,7 @@ import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Date;
 import java.util.Objects;
@@ -19,7 +21,10 @@ import java.util.Objects;
  * @author Aaron Whiteside
  * @see ExtendedCommitComment
  */
-public class ReviewCommentGroovyObject extends GroovyObjectSupport {
+@SuppressFBWarnings("SE_BAD_FIELD")
+public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final RepositoryId base;
     private final ExtendedCommitService commitService;
 

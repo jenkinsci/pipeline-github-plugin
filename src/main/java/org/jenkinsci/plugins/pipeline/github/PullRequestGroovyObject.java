@@ -50,7 +50,7 @@ import static java.util.stream.Collectors.toList;
 @SuppressFBWarnings("SE_BAD_FIELD")
 public class PullRequestGroovyObject extends GroovyObjectSupport implements Serializable {
 
-    private final CpsScript script;
+    private static final long serialVersionUID = 1L;
 
     private final PullRequestSCMHead pullRequestHead;
     private final RepositoryId base;
@@ -62,8 +62,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     private final ExtendedCommitService commitService;
     private ExtendedPullRequest pullRequest;
 
-    public PullRequestGroovyObject(@Nonnull final CpsScript script) throws Exception {
-        this.script = script;
+    PullRequestGroovyObject(@Nonnull final CpsScript script) throws Exception {
         Run<?, ?> build = script.$build();
         if (build == null) {
             throw new IllegalStateException("No associated build");
@@ -255,7 +254,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public List<CommitStatusGroovyObject> getStatuses() {
+    public Iterable<CommitStatusGroovyObject> getStatuses() {
         try {
             return commitService.getStatuses(base, pullRequest.getHead().getSha())
                     .stream()
@@ -278,7 +277,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public List<String> getAssignees() {
+    public Iterable<String> getAssignees() {
         return pullRequest.getAssignees()
                 .stream()
                 .map(User::getLogin)
@@ -324,7 +323,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public List<CommitFileGroovyObject> getFiles() {
+    public Iterable<CommitFileGroovyObject> getFiles() {
         try {
             return pullRequestService.getFiles(base, pullRequestHead.getNumber())
                     .stream()

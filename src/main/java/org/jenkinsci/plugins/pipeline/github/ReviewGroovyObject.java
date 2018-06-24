@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import groovy.lang.GroovyObjectSupport;
@@ -9,7 +10,9 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 /**
  * Groovy wrapper for PR reviews
  */
-public class ReviewGroovyObject extends GroovyObjectSupport {
+public class ReviewGroovyObject extends GroovyObjectSupport implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Review review;
 
     ReviewGroovyObject(final Review review) {

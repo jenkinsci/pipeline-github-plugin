@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitStatus;
@@ -10,9 +11,9 @@ import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -35,7 +36,10 @@ import static java.util.stream.Collectors.toList;
  * @author Aaron Whiteside
  * @see RepositoryCommit
  */
-public class CommitGroovyObject extends GroovyObjectSupport {
+@SuppressFBWarnings("SE_BAD_FIELD")
+public class CommitGroovyObject extends GroovyObjectSupport implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final RepositoryCommit commit;
     private final ExtendedCommitService commitService;
     private final RepositoryId base;
@@ -103,7 +107,7 @@ public class CommitGroovyObject extends GroovyObjectSupport {
     }
 
     @Whitelisted
-    public List<CommitStatusGroovyObject> getStatuses() {
+    public Iterable<CommitStatusGroovyObject> getStatuses() {
         try {
             return commitService.getStatuses(base, commit.getSha())
                     .stream()
@@ -115,7 +119,7 @@ public class CommitGroovyObject extends GroovyObjectSupport {
     }
 
     @Whitelisted
-    public List<String> getParents() {
+    public Iterable<String> getParents() {
         return commit.getParents()
                 .stream()
                 .map(Commit::getSha)
@@ -123,7 +127,7 @@ public class CommitGroovyObject extends GroovyObjectSupport {
     }
 
     @Whitelisted
-    public List<CommitFileGroovyObject> getFiles() {
+    public Iterable<CommitFileGroovyObject> getFiles() {
         return commit.getFiles()
                 .stream()
                 .map(CommitFileGroovyObject::new)

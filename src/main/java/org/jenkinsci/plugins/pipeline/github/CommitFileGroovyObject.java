@@ -4,13 +4,17 @@ import groovy.lang.GroovyObjectSupport;
 import org.eclipse.egit.github.core.CommitFile;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
+import java.io.Serializable;
+
 /**
  * Groovy wrapper over a {@link CommitFile}.
  *
  * @author Aaron Whiteside
  * @see CommitFile
  */
-public class CommitFileGroovyObject extends GroovyObjectSupport {
+public class CommitFileGroovyObject extends GroovyObjectSupport implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final CommitFile file;
 
     CommitFileGroovyObject(final CommitFile file) {
