@@ -2,3 +2,8 @@
 target
 work
 *.iml
+.classpath
+.factorypath
+.project
+.settings
+.vscode
