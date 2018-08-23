@@ -551,10 +551,10 @@ for (review in pullRequest.reviews) {
 
 ### Requesting reviewers
 ```groovy
-pullRequest.createReviewRequests('Spock', 'McCoy')
+pullRequest.createReviewRequests(['Spock', 'McCoy'])
 ```
 
 ### Deleting requested reviewers
 ```groovy
-pullRequest.deleteReviewRequests('McCoy')
+pullRequest.deleteReviewRequests(['McCoy'])
 ```
