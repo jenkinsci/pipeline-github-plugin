@@ -401,7 +401,7 @@ if (pullRequest.mergeable) {
 }
 // or
 if (pullRequest.mergeable) {
-    pullRequest.merge(commitTile: 'Make it so..', commitMessage: 'TO BOLDLY GO WHERE NO MAN HAS GONE BEFORE...', mergeMethod: 'squash')
+    pullRequest.merge(commitTitle: 'Make it so..', commitMessage: 'TO BOLDLY GO WHERE NO MAN HAS GONE BEFORE...', mergeMethod: 'squash')
 }
 ```
 
