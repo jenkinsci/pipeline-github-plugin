@@ -183,6 +183,29 @@ public class ExtendedPullRequestService extends PullRequestService {
         return this.createPageIterator(request);
     }
 
+    public void createReview(final IRepositoryIdProvider repository,
+                             final int id,
+                             final String commitId,
+                             final String event,
+                             final String body) throws IOException {
+        if (event != null && (event.equals("REQUEST_CHANGES") || event.equals("COMMENT"))) {
+            Objects.requireNonNull(body, "body is a required argument when event equals REQUEST_CHANGES or COMMENT");
+        }
+
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/pulls");
+        uri.append('/').append(id);
+        uri.append("/reviews");
+
+        Map<String, String> params = new HashMap<>();
+        if (commitId != null) params.put("commit_id", commitId);
+        if (body != null) params.put("body", body);
+        if (event != null) params.put("event", event);
+        getClient().post(uri.toString(), params, null);
+    }
+
     public void createReviewRequests(final IRepositoryIdProvider repository,
                                      final int id,
                                      final List<String> reviewers) throws IOException {

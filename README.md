@@ -230,6 +230,13 @@ Returns the merge's SHA/commit id.
 
 > void removeAssignees(List<String> assignees)
 
+#### Reviews
+> void review(String event)
+
+> void review(String event, String body)
+
+> void review(String commitId, String event, String body)
+
 #### Review Comments
 > ReviewComment reviewComment(String commitId, String path, int position, String body)
 
@@ -440,6 +447,18 @@ pullRequest.assignees = ['Data', 'Scotty']
 for (commitFile in pullRequest.files) {
     echo "SHA: ${commitFile.sha} File Name: ${commitFile.filename} Status: ${commitFile.status}"
 }
+```
+
+### Adding a review
+```groovy
+pullRequest.review('APPROVE')
+// or
+pullRequest.review('REQUEST_CHANGES', 'Change is the essential process of all existence.')
+// or
+def commitId = 'SHA of the commit containing the change/file you wish to review' // if unspecified, defaults to the most recent commit
+def event = 'REQUEST_CHANGES' // valid review events: APPROVE, REQUEST_CHANGES, COMMENT
+def body = 'Change is the essential process of all existence.' // body is required when event equals REQUEST_CHANGES or COMMENT
+pullRequest.review(commitId, event, body)
 ```
 
 ### Adding a comment

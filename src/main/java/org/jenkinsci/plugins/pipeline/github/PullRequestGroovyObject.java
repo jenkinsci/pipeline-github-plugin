@@ -502,6 +502,29 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public void review(final String event) {
+        review(null, event, null);
+    }
+
+    @Whitelisted
+    public void review(final String event, final String body) {
+        review(null, event, body);
+    }
+
+    @Whitelisted
+    public void review(final String commitId, final String event, final String body) {
+        if (event != null && (event.equals("REQUEST_CHANGES") || event.equals("COMMENT"))) {
+            Objects.requireNonNull(body, "body is a required argument when event equals REQUEST_CHANGES or COMMENT");
+        }
+
+        try {
+            pullRequestService.createReview(base, pullRequestHead.getNumber(), commitId, event, body);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Whitelisted
     public CommitStatusGroovyObject createStatus(final Map<String, Object> params) {
         Objects.requireNonNull(params.get("status"), "status is a required argument");
 
