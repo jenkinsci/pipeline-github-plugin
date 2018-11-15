@@ -525,7 +525,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         commitStatus.setTargetUrl(targetUrl);
         try {
             return new CommitStatusGroovyObject(
-                    commitService.createStatus(head, pullRequest.getHead().getSha(), commitStatus));
+                    commitService.createStatus(base, pullRequest.getHead().getSha(), commitStatus));
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
