@@ -12,7 +12,7 @@ Table of Contents
     * [CommitStatus](#commitstatus)
     * [Commit](#commit)
     * [CommitFile](#commitfile)
-    * [IssueComment](#issuecommet)
+    * [IssueComment](#issuecomment)
     * [ReviewComment](#reviewcomment)
   * [Examples](#examples)
 
