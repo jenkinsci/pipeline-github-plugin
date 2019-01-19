@@ -52,6 +52,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     private static final long serialVersionUID = 1L;
 
+    private static final int UNEXISTING_MILESTONE = -1;
+
     private final PullRequestSCMHead pullRequestHead;
     private final RepositoryId base;
     private final RepositoryId head;
@@ -133,7 +135,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     @Whitelisted
     public int getMilestone() {
-        return pullRequest.getMilestone().getNumber();
+        if (pullRequest.getMilestone() != null) {
+            return pullRequest.getMilestone().getNumber();
+        } else {
+            return UNEXISTING_MILESTONE;
+        }
     }
 
     @Whitelisted
