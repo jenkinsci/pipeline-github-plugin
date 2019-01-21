@@ -649,10 +649,15 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     @Whitelisted
     public String merge(final Map<String, Object> params) {
-        return merge(params.get("commitTitle") != null ? params.get("commitTitle").toString() : null,
-                     params.get("commitMessage") != null ? params.get("commitMessage").toString() : null,
-                     params.get("sha") != null ? params.get("sha").toString() : null,
-                     params.get("mergeMethod") != null ? params.get("mergeMethod").toString() : null);
+        return merge(Optional.ofNullable(params.get("commitTitle")).map(Object::toString).orElse(null),
+                     Optional.ofNullable(params.get("commitMessage")).map(Object::toString).orElse(null),
+                     Optional.ofNullable(params.get("sha")).map(Object::toString).orElse(null),
+                     Optional.ofNullable(params.get("mergeMethod")).map(Object::toString).orElse(null));
+    }
+
+    @Whitelisted
+    public String merge(final String commitMessage) {
+        return merge(null, commitMessage, null, null);
     }
 
     @Whitelisted

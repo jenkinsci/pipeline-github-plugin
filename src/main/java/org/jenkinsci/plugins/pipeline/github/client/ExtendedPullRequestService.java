@@ -93,10 +93,18 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/merge");
 
         Map<String, String> params = new HashMap<>();
-        params.put("commit_title", commitTitle);
-        params.put("commit_message", commitMessage);
-        params.put("sha", sha);
-        params.put("merge_method", mergeMethod);
+        if (commitTitle != null) {
+            params.put("commit_title", commitTitle);
+        }
+        if (commitMessage != null) {
+            params.put("commit_message", commitMessage);
+        }
+        if (sha != null) {
+            params.put("sha", sha);
+        }
+        if (mergeMethod != null) {
+            params.put("merge_method", mergeMethod);
+        }
         return getClient().put(uri.toString(), params, ExtendedMergeStatus.class);
     }
 
