@@ -431,6 +431,12 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public void createReviewRequest(final String reviewer) {
+        Objects.requireNonNull(reviewer, "reviewer cannot be null");
+        createReviewRequests(Collections.singletonList(reviewer));
+    }
+
+    @Whitelisted
     public void createReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
@@ -438,6 +444,12 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Whitelisted
+    public void deleteReviewRequest(final String reviewer) {
+        Objects.requireNonNull(reviewer, "reviewer cannot be null");
+        deleteReviewRequests(Collections.singletonList(reviewer));
     }
 
     @Whitelisted
