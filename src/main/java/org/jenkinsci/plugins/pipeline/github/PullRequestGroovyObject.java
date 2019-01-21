@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -420,12 +421,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public void setLabels(List<String> labels) {
-        if (labels == null) {
-            labels = Collections.emptyList();
-        }
+    public void setLabels(final List<String> labels) {
         try {
-            issueService.setLabels(base, pullRequest.getNumber(), labels);
+            issueService.setLabels(base, pullRequest.getNumber(),
+                    Optional.ofNullable(labels).orElseGet(Collections::emptyList));
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -449,6 +448,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Whitelisted
+    public void addLabel(final String label) {
+        addLabels(Collections.singletonList(label));
     }
 
     @Whitelisted
