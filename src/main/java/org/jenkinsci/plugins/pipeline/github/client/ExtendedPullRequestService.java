@@ -28,7 +28,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         return (ExtendedGitHubClient) super.getClient();
     }
 
-    public ExtendedPullRequest editPullRequest(final IRepositoryIdProvider repository, final ExtendedPullRequest request) throws IOException {
+    public ExtendedPullRequest editPullRequest(final IRepositoryIdProvider repository, final ExtendedPullRequest request) {
         Objects.requireNonNull(request, "request cannot be null");
 
         String id = this.getId(repository);
