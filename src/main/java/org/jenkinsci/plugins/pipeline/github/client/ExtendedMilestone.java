@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.pipeline.github.client;
 
 import org.eclipse.egit.github.core.Milestone;
+import org.eclipse.egit.github.core.util.DateUtils;
 
 import java.util.Date;
 
@@ -14,18 +15,18 @@ public class ExtendedMilestone extends Milestone {
     private Date closedAt;
 
     public Date getUpdatedAt() {
-        return updatedAt;
+        return DateUtils.clone(this.updatedAt);
     }
 
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdatedAt(final Date updatedAt) {
+        this.updatedAt = DateUtils.clone(updatedAt);
     }
 
     public Date getClosedAt() {
-        return closedAt;
+        return DateUtils.clone(this.closedAt);
     }
 
-    public void setClosedAt(Date closedAt) {
-        this.closedAt = closedAt;
+    public void setClosedAt(final Date closedAt) {
+        this.closedAt = DateUtils.clone(closedAt);
     }
 }
