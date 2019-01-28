@@ -28,7 +28,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         return (ExtendedGitHubClient) super.getClient();
     }
 
-    public ExtendedPullRequest editPullRequest(final IRepositoryIdProvider repository, final ExtendedPullRequest request) throws IOException {
+    public ExtendedPullRequest editPullRequest(final IRepositoryIdProvider repository, final ExtendedPullRequest request) {
         Objects.requireNonNull(request, "request cannot be null");
 
         String id = this.getId(repository);
@@ -67,7 +67,7 @@ public class ExtendedPullRequestService extends PullRequestService {
 
 
     @Override
-    public ExtendedPullRequest getPullRequest(final IRepositoryIdProvider repository, final int id) throws IOException {
+    public ExtendedPullRequest getPullRequest(final IRepositoryIdProvider repository, final int id) {
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
@@ -76,7 +76,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         GitHubRequest request = this.createRequest();
         request.setUri(uri);
         request.setType(ExtendedPullRequest.class);
-        return (ExtendedPullRequest) getClient().get(request).getBody();
+        return (ExtendedPullRequest) getClient().getUnchecked(request).getBody();
     }
 
     public ExtendedMergeStatus merge(final IRepositoryIdProvider repository,

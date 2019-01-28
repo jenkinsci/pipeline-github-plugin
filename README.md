@@ -177,7 +177,7 @@ issueUrl | `String` | false
 title | `String` | **true**
 body | `String` | **true**
 locked | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
-milestone | `Integer` | **true**
+milestone | `Milestone` | **true** | Setter accepts int or Milestone class.
 head | `String` | false | Revision (SHA) of the head commit of this pull request
 headRef | `String` | false | Name of the branch this pull request is created for
 base | `String` | **true** | Name of the base branch in the current repository this pull request targets
@@ -363,6 +363,27 @@ state | `String` | One of APPROVED, PENDING, CHANGES_REQUESTED, DISMISSED, COMME
 
 ### Methods
 None.
+
+## Milestone
+### Properties
+Name | Type | Setter | Description
+-----|------|----------|------------
+number | `Integer` | false
+createdAt | `Date` | false
+dueOn | `Date` | false
+updatedAt | `Date` | false
+closedAt | `Date` | false
+closedIssues | `Integer` | false
+openIssues | `Integer` | false
+description | `String` | false
+state | `String` | false
+title | `String` | false
+url | `String` | false
+creator | `String` | false
+
+### Methods
+None.
+
 
 # Examples
 

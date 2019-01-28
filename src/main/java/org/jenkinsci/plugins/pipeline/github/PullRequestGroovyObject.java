@@ -7,6 +7,7 @@ import hudson.model.Run;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.Label;
+import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.User;
@@ -16,6 +17,7 @@ import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedGitHubClient;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedIssueService;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedMergeStatus;
+import org.jenkinsci.plugins.pipeline.github.client.ExtendedMilestoneService;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequest;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequestService;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
@@ -61,6 +63,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     private final ExtendedPullRequestService pullRequestService;
     private final ExtendedIssueService issueService;
     private final ExtendedCommitService commitService;
+    private final ExtendedMilestoneService milestoneService;
     private ExtendedPullRequest pullRequest;
 
     PullRequestGroovyObject(@Nonnull final CpsScript script) throws Exception {
@@ -79,6 +82,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         this.pullRequestService = new ExtendedPullRequestService(gitHubClient);
         this.issueService = new ExtendedIssueService(gitHubClient);
         this.commitService = new ExtendedCommitService(gitHubClient);
+        this.milestoneService = new ExtendedMilestoneService(gitHubClient);
         this.pullRequest = pullRequestService.getPullRequest(base, pullRequestHead.getNumber());
     }
 
@@ -133,8 +137,12 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public int getMilestone() {
-        return pullRequest.getMilestone().getNumber();
+    public MilestoneGroovyObject getMilestone() {
+        return Optional.ofNullable(pullRequest.getMilestone())
+                .map(Milestone::getNumber)
+                .map(m -> milestoneService.getMilestone(base, m))
+                .map(MilestoneGroovyObject::new)
+                .orElse(null);
     }
 
     @Whitelisted
@@ -335,8 +343,24 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
     }
 
+    @Whitelisted
     public void setMilestone(final int milestoneNumber) {
-        // todo
+        pullRequest.setMilestone(
+                issueService.setMilestone(base, pullRequest.getNumber(), milestoneNumber)
+                        .getMilestone());
+    }
+
+    @Whitelisted
+    public void setMilestone(final MilestoneGroovyObject milestone) {
+        if (milestone == null) {
+            // call setMilestone because the caller might not have the right permissions to remove
+            // the milestone and it'll return the current milestone.
+            pullRequest.setMilestone(
+                    issueService.setMilestone(base, pullRequest.getNumber(), null)
+                        .getMilestone());
+        } else {
+            setMilestone(milestone.getNumber());
+        }
     }
 
     @Whitelisted
@@ -359,11 +383,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setTitle(title);
-        try {
-            pullRequest = pullRequestService.editPullRequest(base, edit);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -373,11 +393,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBody(body);
-        try {
-            pullRequest = pullRequestService.editPullRequest(base, edit);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -387,11 +403,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setState(state);
-        try {
-            pullRequest = pullRequestService.editPullRequest(base, edit);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -401,11 +413,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBase(new PullRequestMarker().setRef(newBase));
-        try {
-            pullRequest = pullRequestService.editPullRequest(base, edit);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -413,11 +421,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setMaintainerCanModify(value);
-        try {
-            pullRequest = pullRequestService.editPullRequest(base, edit);
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -684,11 +688,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     @Whitelisted
     public void refresh() {
-        try {
-            pullRequest = pullRequestService.getPullRequest(base, pullRequest.getNumber());
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.getPullRequest(base, pullRequest.getNumber());
     }
 
     @Whitelisted

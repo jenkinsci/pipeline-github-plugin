@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.eclipse.mylyn.github</groupId>
             <artifactId>org.eclipse.egit.github.core</artifactId>
-            <version>5.0.0.201806131550-r</version>
+            <version>5.2.0.201812061821-r</version>
         </dependency>
 
         <dependency>

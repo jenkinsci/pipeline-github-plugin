@@ -1,9 +1,12 @@
 package org.jenkinsci.plugins.pipeline.github.client;
 
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.GitHubRequest;
+import org.eclipse.egit.github.core.client.GitHubResponse;
 import org.eclipse.egit.github.core.client.RequestException;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 
@@ -23,16 +26,20 @@ public class ExtendedGitHubClient extends GitHubClient {
         super(hostname, port, scheme);
     }
 
-    public <V> V patch(final String uri, final Object params, final Type type) throws IOException {
+    public <V> V patch(final String uri, final Object params, final Type type) {
         return patch(uri, params, type, null);
     }
 
-    public <V> V patch(final String uri, final Object params, final Type type, final String accept) throws IOException {
-        HttpURLConnection request = this.createPatch(uri);
-        if (accept != null) {
-            request.setRequestProperty("Accept", accept);
+    public <V> V patch(final String uri, final Object params, final Type type, final String accept) {
+        try {
+            final HttpURLConnection request = createPatch(uri);
+            if (accept != null) {
+                request.setRequestProperty("Accept", accept);
+            }
+            return this.sendJson(request, params, type);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
-        return this.sendJson(request, params, type);
     }
 
     protected HttpURLConnection createPatch(final String uri) throws IOException {
@@ -84,4 +91,14 @@ public class ExtendedGitHubClient extends GitHubClient {
             throw this.createException(this.getStream(request), code, request.getResponseMessage());
         }
     }
+
+    // UncheckedIOException version of get(GitHubRequest)
+    public GitHubResponse getUnchecked(final GitHubRequest request) {
+        try {
+            return get(request);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
 }

@@ -75,6 +75,19 @@ public class ExtendedIssueService extends IssueService {
         getClient().delete(uri.toString(), params);
     }
 
+    public Issue setMilestone(final IRepositoryIdProvider repository,
+                              final int issueNumber,
+                              final Integer milestoneNumber) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/issues");
+        uri.append('/').append(issueNumber);
+        Map<Object, Object> params = new HashMap<>(1, 1.0F);
+        params.put("milestone", milestoneNumber);
+        return getClient().patch(uri.toString(), params, Issue.class);
+    }
+
     public void setAssignees(final IRepositoryIdProvider repository,
                              final int issueNumber,
                              final List<String> assignees) throws IOException {
