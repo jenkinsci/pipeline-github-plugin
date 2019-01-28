@@ -1,74 +1,38 @@
 package org.jenkinsci.plugins.pipeline.github.client;
 
-import org.eclipse.egit.github.core.Comment;
+import org.eclipse.egit.github.core.CommitComment;
 
 /**
  * @author Aaron Whiteside
  */
-public class ExtendedCommitComment extends Comment {
+public class ExtendedCommitComment extends CommitComment {
     private static final long serialVersionUID = 4834285683963788350L;
 
-    private Integer line;
-    private Integer position;
-    private Integer originalPosition;
-    private String commitId;
-    private String originalCommitId;
-    private String path;
-    private String diffHunk;
+    private String pullRequestUrl;
+    private long pullRequestReviewId;
+    private long inReplyToId;
 
-    public Integer getLine() {
-        return line;
+    public long getInReplyToId() {
+        return inReplyToId;
     }
 
-    public void setLine(final Integer line) {
-        this.line = line;
+    public void setInReplyToId(final long inReplyToId) {
+        this.inReplyToId = inReplyToId;
     }
 
-    public Integer getPosition() {
-        return position;
+    public String getPullRequestUrl() {
+        return pullRequestUrl;
     }
 
-    public void setPosition(final Integer position) {
-        this.position = position;
+    public void setPullRequestUrl(final String pullRequestUrl) {
+        this.pullRequestUrl = pullRequestUrl;
     }
 
-    public Integer getOriginalPosition() {
-        return originalPosition;
+    public long getPullRequestReviewId() {
+        return pullRequestReviewId;
     }
 
-    public void setOriginalPosition(final Integer originalPosition) {
-        this.originalPosition = originalPosition;
-    }
-
-    public String getCommitId() {
-        return commitId;
-    }
-
-    public void setCommitId(final String commitId) {
-        this.commitId = commitId;
-    }
-
-    public String getOriginalCommitId() {
-        return originalCommitId;
-    }
-
-    public void setOriginalCommitId(final String originalCommitId) {
-        this.originalCommitId = originalCommitId;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(final String path) {
-        this.path = path;
-    }
-
-    public String getDiffHunk() {
-        return diffHunk;
-    }
-
-    public void setDiffHunk(final String diffHunk) {
-        this.diffHunk = diffHunk;
+    public void setPullRequestReviewId(long pullRequestReviewId) {
+        this.pullRequestReviewId = pullRequestReviewId;
     }
 }

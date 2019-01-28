@@ -335,19 +335,22 @@ updatedAt | `Date` | false
 ### Properties
 Name | Type | Setter | Description
 -----|------|----------|------------
-id | `Integer` | false
+id | `Long` | false
 url | `String` | false
 user | `String` | false
 createdAt | `Date` | false
 updatedAt | `Date` | false
 commitId | `String` | false
-originalCommitId | `Integer` | false
+originalCommitId | `Long` | false
 body | `String` | **true**
 path | `String` | false
-line | `Integer` | false
+line | `Integer` | false | This will always return `null` as the GitHub APIs no longer return `line`, use `position` instead.
 position | `Integer` | false
 originalPosition | `Integer` | false
 diffHunk | `String` | false
+pullRequestUrl | `String` | false
+pullRequestReviewId | `Long` | false
+inReplyToId | `Long` | false
 
 ### Methods
 > void delete()
@@ -531,7 +534,7 @@ for (comment in pullRequest.comments) {
 ### Listing a Pull Request's review comments
 ```groovy
 for (reviewComment in pullRequest.reviewComments) {
-  echo "File: ${reviewComment.path}, Line: ${reviewComment.line}, Author: ${reviewComment.user}, Comment: ${reviewComment.body}"
+  echo "File: ${reviewComment.path}, Position: ${reviewComment.position}, Author: ${reviewComment.user}, Comment: ${reviewComment.body}"
 }
 ```
 

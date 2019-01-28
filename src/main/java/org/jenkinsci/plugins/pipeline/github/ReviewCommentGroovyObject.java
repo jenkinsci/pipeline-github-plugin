@@ -43,6 +43,7 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
     }
 
     @Whitelisted
+    @Deprecated
     public Integer getLine() {
         return commitComment.getLine();
     }
@@ -105,6 +106,21 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
     @Whitelisted
     public String getUser() {
         return GitHubHelper.userToLogin(commitComment.getUser());
+    }
+
+    @Whitelisted
+    public long getInReplyToId() {
+        return commitComment.getInReplyToId();
+    }
+
+    @Whitelisted
+    public String getPullRequestUrl() {
+        return commitComment.getPullRequestUrl();
+    }
+
+    @Whitelisted
+    public long getPullRequestReviewId() {
+        return commitComment.getPullRequestReviewId();
     }
 
     @Whitelisted
