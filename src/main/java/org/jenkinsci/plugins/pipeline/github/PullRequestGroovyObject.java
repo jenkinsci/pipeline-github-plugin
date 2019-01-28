@@ -688,11 +688,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     @Whitelisted
     public void refresh() {
-        try {
-            pullRequest = pullRequestService.getPullRequest(base, pullRequest.getNumber());
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        pullRequest = pullRequestService.getPullRequest(base, pullRequest.getNumber());
     }
 
     @Whitelisted
