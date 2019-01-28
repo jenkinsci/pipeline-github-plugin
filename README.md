@@ -14,6 +14,8 @@ Table of Contents
     * [CommitFile](#commitfile)
     * [IssueComment](#issuecomment)
     * [ReviewComment](#reviewcomment)
+    * [Review](#review)
+    * [Milestone](#milestone)
   * [Examples](#examples)
 
 
