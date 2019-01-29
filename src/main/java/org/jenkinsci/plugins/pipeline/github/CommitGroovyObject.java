@@ -6,6 +6,7 @@ import org.eclipse.egit.github.core.Commit;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.User;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitComment;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
@@ -16,6 +17,7 @@ import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -68,12 +70,16 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
 
     @Whitelisted
     public String getAuthor() {
-        return commit.getAuthor().getLogin();
+        return Optional.ofNullable(commit.getAuthor())
+                .map(User::getLogin)
+                .orElse(null);
     }
 
     @Whitelisted
     public String getCommitter() {
-        return commit.getCommitter().getLogin();
+        return Optional.ofNullable(commit.getCommitter())
+                .map(User::getLogin)
+                .orElse(null);
     }
 
     @Whitelisted
