@@ -9,6 +9,7 @@ import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.service.IssueService;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,14 +144,18 @@ public class ExtendedIssueService extends IssueService {
     public void removeLabel(final IRepositoryIdProvider repository,
                             final int issueNumber,
                             final String label) throws IOException {
-        String repoId = this.getId(repository);
-        StringBuilder uri = new StringBuilder("/repos");
+        final String repoId = this.getId(repository);
+        final StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
         uri.append("/issues");
         uri.append('/').append(issueNumber);
         uri.append("/labels");
         uri.append('/');
-        uri.append(label);
+
+        final String encodedLabel = URLEncoder.encode(label, "UTF-8")
+                .replace("+", "%20")
+                .replace(".", "%2E");
+        uri.append(encodedLabel);
         getClient().delete(uri.toString());
     }
 
