@@ -31,7 +31,9 @@ public class ExtendedGitHubClient extends GitHubClient {
 
     public <V> V patch(final String uri, final Object params, final Type type, final String accept) {
         try {
-            final HttpURLConnection request = createPatch(uri);
+            final HttpURLConnection request = createPost(uri);
+            request.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+
             if (accept != null) {
                 request.setRequestProperty("Accept", accept);
             }
@@ -39,10 +41,6 @@ public class ExtendedGitHubClient extends GitHubClient {
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    protected HttpURLConnection createPatch(final String uri) throws IOException {
-        return this.createConnection(uri, "PATCH");
     }
 
     public <V> V post(final String uri, final Object params, final Type type, final String accept) throws IOException {
