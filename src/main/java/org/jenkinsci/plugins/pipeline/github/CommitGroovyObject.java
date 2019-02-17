@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -138,7 +139,8 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
 
     @Whitelisted
     public Iterable<CommitFileGroovyObject> getFiles() {
-        return commit.getFiles()
+        return Optional.ofNullable(commit.getFiles())
+                .orElseGet(Collections::emptyList)
                 .stream()
                 .map(CommitFileGroovyObject::new)
                 .collect(toList());
