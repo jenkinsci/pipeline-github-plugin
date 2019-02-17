@@ -141,9 +141,9 @@ public class ExtendedIssueService extends IssueService {
         return getClient().post(uri.toString(), labels, (new TypeToken<List<Label>>() {}).getType());
     }
 
-    public void removeLabel(final IRepositoryIdProvider repository,
-                            final int issueNumber,
-                            final String label) throws IOException {
+    public List<Label> removeLabel(final IRepositoryIdProvider repository,
+                                   final int issueNumber,
+                                   final String label) throws IOException {
         final String repoId = this.getId(repository);
         final StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
@@ -156,7 +156,8 @@ public class ExtendedIssueService extends IssueService {
                 .replace("+", "%20")
                 .replace(".", "%2E");
         uri.append(encodedLabel);
-        getClient().delete(uri.toString());
+
+        return getClient().delete(uri.toString(), (new TypeToken<List<Label>>() {}).getType(), null);
     }
 
 }

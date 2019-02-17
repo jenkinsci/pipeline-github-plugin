@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.pipeline.github.client;
 import org.eclipse.egit.github.core.client.GitHubClient;
 import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.client.GitHubResponse;
-import org.eclipse.egit.github.core.client.RequestException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -62,22 +61,6 @@ public class ExtendedGitHubClient extends GitHubClient {
         return this.sendJson(request, params, type);
     }
 
-    public void delete(final String uri, final Object params, final String accept) throws IOException {
-        HttpURLConnection request = this.createDelete(uri);
-        if (accept != null) {
-            request.setRequestProperty("Accept", accept);
-        }
-        if (params != null) {
-            this.sendParams(request, params);
-        }
-
-        int code = request.getResponseCode();
-        this.updateRateLimits(request);
-        if (!this.isEmpty(code)) {
-            throw new RequestException(this.parseError(this.getStream(request)), code);
-        }
-    }
-
     // duplicated here because it's private in the super class.
     private <V> V sendJson(final HttpURLConnection request, final Object params, final Type type) throws IOException {
         this.sendParams(request, params);
@@ -98,6 +81,23 @@ public class ExtendedGitHubClient extends GitHubClient {
             return get(request);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    public <V> V delete(final String uri, final Type type, final String accept) throws IOException {
+        HttpURLConnection request = this.createDelete(uri);
+        if (accept != null) {
+            request.setRequestProperty("Accept", accept);
+        }
+
+        int code = request.getResponseCode();
+        this.updateRateLimits(request);
+        if (this.isOk(code)) {
+            return type != null ? this.parseJson(this.getStream(request), type) : null;
+        } else if (this.isEmpty(code)) {
+            return null;
+        } else {
+            throw this.createException(this.getStream(request), code, request.getResponseMessage());
         }
     }
 
