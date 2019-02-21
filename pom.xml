@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>pipeline-github</artifactId>
-    <version>2.3</version>
+    <version>2.4-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -37,7 +37,7 @@
         <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>pipeline-github-2.3</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
