@@ -3,7 +3,7 @@ package org.jenkinsci.plugins.pipeline.github;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import hudson.model.Job;
-import hudson.model.Run;
+import jenkins.model.Jenkins;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.Label;
@@ -21,7 +21,6 @@ import org.jenkinsci.plugins.pipeline.github.client.ExtendedMilestoneService;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequest;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequestService;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
-import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jenkinsci.plugins.workflow.cps.persistence.PersistIn;
 import org.jenkinsci.plugins.workflow.cps.persistence.PersistenceContext;
 
@@ -55,36 +54,78 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     private static final long serialVersionUID = 1L;
 
+    private final String jobId;
     private final PullRequestSCMHead pullRequestHead;
     private final RepositoryId base;
     private final RepositoryId head;
-    private final ExtendedGitHubClient gitHubClient;
 
-    private final ExtendedPullRequestService pullRequestService;
-    private final ExtendedIssueService issueService;
-    private final ExtendedCommitService commitService;
-    private final ExtendedMilestoneService milestoneService;
     private ExtendedPullRequest pullRequest;
 
-    PullRequestGroovyObject(@Nonnull final CpsScript script) throws Exception {
-        Run<?, ?> build = script.$build();
-        if (build == null) {
-            throw new IllegalStateException("No associated build");
-        }
-        Job job = build.getParent();
+    private transient Job job;
+    private transient ExtendedGitHubClient gitHubClient;
+    private transient ExtendedPullRequestService pullRequestService;
+    private transient ExtendedIssueService issueService;
+    private transient ExtendedCommitService commitService;
+    private transient ExtendedMilestoneService milestoneService;
+
+    PullRequestGroovyObject(@Nonnull final Job job) throws Exception {
+        this.job = job;
+
+        this.jobId = job.getFullName();
 
         this.pullRequestHead = GitHubHelper.getPullRequest(job);
-
         this.base = GitHubHelper.getRepositoryId(job);
         this.head = RepositoryId.create(pullRequestHead.getSourceOwner(), pullRequestHead.getSourceRepo());
 
-        this.gitHubClient = GitHubHelper.getGitHubClient(job);
-        this.pullRequestService = new ExtendedPullRequestService(gitHubClient);
-        this.issueService = new ExtendedIssueService(gitHubClient);
-        this.commitService = new ExtendedCommitService(gitHubClient);
-        this.milestoneService = new ExtendedMilestoneService(gitHubClient);
-        this.pullRequest = pullRequestService.getPullRequest(base, pullRequestHead.getNumber());
+        // fetch and cache the pull request
+        this.pullRequest = getPullRequestService().getPullRequest(base, pullRequestHead.getNumber());
     }
+
+    private Job getJob() {
+        if (job == null) {
+            job = Jenkins.get().getItemByFullName(jobId, Job.class);
+            if (job == null) {
+                throw new IllegalStateException("Unable to find Job: " + jobId);
+            }
+        }
+        return job;
+    }
+
+    private ExtendedGitHubClient getGitHubClient() {
+        if (gitHubClient == null) {
+            gitHubClient = GitHubHelper.getGitHubClient(getJob());
+        }
+        return gitHubClient;
+    }
+
+    private ExtendedPullRequestService getPullRequestService() {
+        if (pullRequestService == null) {
+            pullRequestService = new ExtendedPullRequestService(getGitHubClient());
+        }
+        return pullRequestService;
+    }
+
+    private ExtendedIssueService getIssueService() {
+        if (issueService == null) {
+            issueService = new ExtendedIssueService(getGitHubClient());
+        }
+        return issueService;
+    }
+
+    private ExtendedCommitService getCommitService() {
+        if (commitService == null) {
+            commitService = new ExtendedCommitService(getGitHubClient());
+        }
+        return commitService;
+    }
+
+    private ExtendedMilestoneService getMilestoneService() {
+        if (milestoneService == null) {
+            milestoneService = new ExtendedMilestoneService(getGitHubClient());
+        }
+        return milestoneService;
+    }
+
 
     @Whitelisted
     public long getId() {
@@ -140,8 +181,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public MilestoneGroovyObject getMilestone() {
         return Optional.ofNullable(pullRequest.getMilestone())
                 .map(Milestone::getNumber)
-                .map(m -> milestoneService.getMilestone(base, m))
-                .map(MilestoneGroovyObject::new)
+                .map(m -> getMilestoneService().getMilestone(base, m))
+                .map(milestone -> new MilestoneGroovyObject(jobId, milestone))
                 .orElse(null);
     }
 
@@ -243,7 +284,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<String> getRequestedReviewers() {
         Stream<String> stream = StreamSupport
-                .stream(pullRequestService.pageRequestedReviewers(base, pullRequest.getNumber())
+                .stream(getPullRequestService().pageRequestedReviewers(base, pullRequest.getNumber())
                         .spliterator(), false)
                 .flatMap(Collection::stream)
                 .map(User::getLogin);
@@ -254,7 +295,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<ReviewGroovyObject> getReviews() {
         Stream<ReviewGroovyObject> stream = StreamSupport
-            .stream(pullRequestService.pageReviews(base, pullRequest.getNumber())
+            .stream(getPullRequestService().pageReviews(base, pullRequest.getNumber())
                     .spliterator(), false)
             .flatMap(Collection::stream)
             .map(ReviewGroovyObject::new);
@@ -265,7 +306,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<CommitStatusGroovyObject> getStatuses() {
         try {
-            return commitService.getStatuses(base, pullRequest.getHead().getSha())
+            return getCommitService().getStatuses(base, pullRequest.getHead().getSha())
                     .stream()
                     .map(CommitStatusGroovyObject::new)
                     .collect(toList());
@@ -277,7 +318,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<String> getLabels() {
         Stream<String> stream = StreamSupport
-                .stream(issueService.getLabels(base, pullRequest.getNumber())
+                .stream(getIssueService().getLabels(base, pullRequest.getNumber())
                         .spliterator(), false)
                 .flatMap(Collection::stream)
                 .map(Label::getName);
@@ -296,10 +337,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<CommitGroovyObject> getCommits() {
         try {
-            Stream<CommitGroovyObject> steam = pullRequestService
+            Stream<CommitGroovyObject> steam = getPullRequestService()
                     .getCommits(base, pullRequestHead.getNumber())
                     .stream()
-                    .map(c -> new CommitGroovyObject(c, commitService, base));
+                    .map(c -> new CommitGroovyObject(jobId, c, getCommitService(), base));
 
             return steam::iterator;
         } catch (final IOException e) {
@@ -310,10 +351,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<IssueCommentGroovyObject> getComments() {
         try {
-            Stream<IssueCommentGroovyObject> stream = issueService
+            Stream<IssueCommentGroovyObject> stream = getIssueService()
                     .getComments(base, pullRequestHead.getNumber())
                     .stream()
-                    .map(c -> new IssueCommentGroovyObject(c, base, issueService));
+                    .map(c -> new IssueCommentGroovyObject(jobId, c, base, getIssueService()));
 
             return stream::iterator;
         } catch (final IOException e) {
@@ -324,17 +365,17 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<ReviewCommentGroovyObject> getReviewComments() {
         Stream<ReviewCommentGroovyObject> stream = StreamSupport
-                .stream(pullRequestService.pageComments2(base,
+                .stream(getPullRequestService().pageComments2(base,
                         pullRequestHead.getNumber()).spliterator(), false)
                 .flatMap(Collection::stream)
-                .map(c -> new ReviewCommentGroovyObject(c, base, commitService));
+                .map(c -> new ReviewCommentGroovyObject(jobId, base, c, getCommitService()));
         return stream::iterator;
     }
 
     @Whitelisted
     public Iterable<CommitFileGroovyObject> getFiles() {
         try {
-            return pullRequestService.getFiles(base, pullRequestHead.getNumber())
+            return getPullRequestService().getFiles(base, pullRequestHead.getNumber())
                     .stream()
                     .map(CommitFileGroovyObject::new)
                     .collect(toList());
@@ -346,7 +387,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public void setMilestone(final int milestoneNumber) {
         pullRequest.setMilestone(
-                issueService.setMilestone(base, pullRequest.getNumber(), milestoneNumber)
+                getIssueService().setMilestone(base, pullRequest.getNumber(), milestoneNumber)
                         .getMilestone());
     }
 
@@ -356,7 +397,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
             // call setMilestone because the caller might not have the right permissions to remove
             // the milestone and it'll return the current milestone.
             pullRequest.setMilestone(
-                    issueService.setMilestone(base, pullRequest.getNumber(), null)
+                    getIssueService().setMilestone(base, pullRequest.getNumber(), null)
                         .getMilestone());
         } else {
             setMilestone(milestone.getNumber());
@@ -367,9 +408,9 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void setLocked(final boolean locked) {
         try {
             if (locked) {
-                issueService.lockIssue(base, pullRequest.getNumber());
+                getIssueService().lockIssue(base, pullRequest.getNumber());
             } else {
-                issueService.unlockIssue(base, pullRequest.getNumber());
+                getIssueService().unlockIssue(base, pullRequest.getNumber());
             }
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
@@ -383,7 +424,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setTitle(title);
-        pullRequest = pullRequestService.editPullRequest(base, edit);
+        pullRequest = getPullRequestService().editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -393,7 +434,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBody(body);
-        pullRequest = pullRequestService.editPullRequest(base, edit);
+        pullRequest = getPullRequestService().editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -403,7 +444,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setState(state);
-        pullRequest = pullRequestService.editPullRequest(base, edit);
+        pullRequest = getPullRequestService().editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -413,7 +454,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setBase(new PullRequestMarker().setRef(newBase));
-        pullRequest = pullRequestService.editPullRequest(base, edit);
+        pullRequest = getPullRequestService().editPullRequest(base, edit);
     }
 
     @Whitelisted
@@ -421,13 +462,13 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         ExtendedPullRequest edit = new ExtendedPullRequest();
         edit.setNumber(pullRequest.getNumber());
         edit.setMaintainerCanModify(value);
-        pullRequest = pullRequestService.editPullRequest(base, edit);
+        pullRequest = getPullRequestService().editPullRequest(base, edit);
     }
 
     @Whitelisted
     public void setLabels(final List<String> labels) {
         try {
-            issueService.setLabels(base, pullRequest.getNumber(),
+            getIssueService().setLabels(base, pullRequest.getNumber(),
                     Optional.ofNullable(labels).orElseGet(Collections::emptyList));
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
@@ -444,7 +485,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void createReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
-            pullRequestService.createReviewRequests(base, pullRequest.getNumber(), reviewers);
+            getPullRequestService().createReviewRequests(base, pullRequest.getNumber(), reviewers);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -460,7 +501,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void deleteReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
-            pullRequestService.deleteReviewRequests(base, pullRequest.getNumber(), reviewers);
+            getPullRequestService().deleteReviewRequests(base, pullRequest.getNumber(), reviewers);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -475,7 +516,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void addLabels(final List<String> labels) {
         Objects.requireNonNull(labels, "labels is a required argument");
         try {
-            issueService.addLabels(base, pullRequest.getNumber(), labels);
+            getIssueService().addLabels(base, pullRequest.getNumber(), labels);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -485,7 +526,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void removeLabel(final String label) {
         Objects.requireNonNull(label, "label is a required argument");
         try {
-            issueService.removeLabel(base, pullRequest.getNumber(), label);
+            getIssueService().removeLabel(base, pullRequest.getNumber(), label);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -495,7 +536,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void addAssignees(final List<String> assignees) {
         Objects.requireNonNull(assignees, "assignees is a required argument");
         try {
-            issueService.addAssignees(base, pullRequest.getNumber(), assignees);
+            getIssueService().addAssignees(base, pullRequest.getNumber(), assignees);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -505,7 +546,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void setAssignees(final List<String> assignees) {
         Objects.requireNonNull(assignees, "assignees is a required argument");
         try {
-            issueService.setAssignees(base, pullRequest.getNumber(), assignees);
+            getIssueService().setAssignees(base, pullRequest.getNumber(), assignees);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -515,7 +556,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void removeAssignees(final List<String> assignees) {
         Objects.requireNonNull(assignees, "assignees is a required argument");
         try {
-            issueService.removeAssignees(base, pullRequest.getNumber(), assignees);
+            getIssueService().removeAssignees(base, pullRequest.getNumber(), assignees);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -545,7 +586,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         commitStatus.setTargetUrl(targetUrl);
         try {
             return new CommitStatusGroovyObject(
-                    commitService.createStatus(base, pullRequest.getHead().getSha(), commitStatus));
+                    getCommitService().createStatus(base, pullRequest.getHead().getSha(), commitStatus));
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -567,9 +608,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         comment.setBody(body);
         try {
             return new ReviewCommentGroovyObject(
-                    pullRequestService.createComment2(base, pullRequestHead.getNumber(), comment),
+                    jobId,
                     base,
-                    commitService);
+                    getPullRequestService().createComment2(base, pullRequestHead.getNumber(), comment),
+                    getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -580,9 +622,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         Objects.requireNonNull(body, "body is a required argument");
         try {
             return new ReviewCommentGroovyObject(
-                    pullRequestService.replyToComment2(base, pullRequestHead.getNumber(), (int) commentId, body),
+                    jobId,
                     base,
-                    commitService);
+                    getPullRequestService().replyToComment2(base, pullRequestHead.getNumber(), (int) commentId, body),
+                    getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -591,7 +634,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public void deleteReviewComment(final long commentId) {
         try {
-            pullRequestService.deleteComment(base, commentId);
+            getPullRequestService().deleteComment(base, commentId);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -605,7 +648,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         comment.setId(commentId);
         comment.setBody(body);
         try {
-            return new ReviewCommentGroovyObject(pullRequestService.editComment2(base, comment), base, commitService);
+            return new ReviewCommentGroovyObject(jobId, base, getPullRequestService().editComment2(base, comment), getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -617,9 +660,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
         try {
             return new IssueCommentGroovyObject(
-                    issueService.createComment(base, pullRequestHead.getNumber(), body),
+                    jobId,
+                    getIssueService().createComment(base, pullRequestHead.getNumber(), body),
                     base,
-                    issueService);
+                    getIssueService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -634,9 +678,10 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         comment.setBody(body);
         try {
             return new IssueCommentGroovyObject(
-                    issueService.editComment(base, comment),
+                    jobId,
+                    getIssueService().editComment(base, comment),
                     base,
-                    issueService);
+                    getIssueService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -645,7 +690,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public void deleteComment(final long commentId) {
         try {
-            issueService.deleteComment(base, commentId);
+            getIssueService().deleteComment(base, commentId);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -670,7 +715,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
                         final String sha,
                         final String mergeMethod) {
         try {
-            ExtendedMergeStatus status = pullRequestService.merge(base,
+            ExtendedMergeStatus status = getPullRequestService().merge(base,
                     pullRequestHead.getNumber(),
                     commitTitle,
                     commitMessage,
@@ -688,11 +733,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     @Whitelisted
     public void refresh() {
-        pullRequest = pullRequestService.getPullRequest(base, pullRequest.getNumber());
+        pullRequest = getPullRequestService().getPullRequest(base, pullRequest.getNumber());
     }
 
     @Whitelisted
     public void setCredentials(final String userName, final String password) {
-        gitHubClient.setCredentials(userName, password);
+        getGitHubClient().setCredentials(userName, password);
     }
 }

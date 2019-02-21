@@ -43,20 +43,27 @@ import static java.util.stream.Collectors.toList;
 public class CommitGroovyObject extends GroovyObjectSupport implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private final String jobId;
     private final RepositoryCommit commit;
-    private final ExtendedCommitService commitService;
     private final RepositoryId base;
 
-    CommitGroovyObject(final RepositoryCommit commit,
+    private transient ExtendedCommitService commitService;
+
+    CommitGroovyObject(final String jobId,
+                       final RepositoryCommit commit,
                        final ExtendedCommitService commitService,
                        final RepositoryId base) {
-        Objects.requireNonNull(commit, "commit cannot be null");
-        Objects.requireNonNull(commitService, "commitService cannot be null");
-        Objects.requireNonNull(base, "base cannot be null");
+        this.jobId = Objects.requireNonNull(jobId, "jobId cannot be null");
+        this.commit = Objects.requireNonNull(commit, "commit cannot be null");
+        this.commitService = Objects.requireNonNull(commitService, "commitService cannot be null");
+        this.base = Objects.requireNonNull(base, "base cannot be null");
+    }
 
-        this.commit = commit;
-        this.commitService = commitService;
-        this.base = base;
+    private ExtendedCommitService getCommitService() {
+        if (commitService == null) {
+            commitService = new ExtendedCommitService(GitHubHelper.getGitHubClient(GitHubHelper.getJob(jobId)));
+        }
+        return commitService;
     }
 
     @Whitelisted
@@ -111,16 +118,16 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
     @Whitelisted
     public Iterable<ReviewCommentGroovyObject> getComments() {
         Stream<ReviewCommentGroovyObject> stream = StreamSupport.stream(
-                commitService.pageComments2(base, commit.getSha()).spliterator(), false)
+                getCommitService().pageComments2(base, commit.getSha()).spliterator(), false)
                 .flatMap(Collection::stream)
-                .map(c -> new ReviewCommentGroovyObject(c, base, commitService));
+                .map(c -> new ReviewCommentGroovyObject(jobId, base, c, commitService));
         return stream::iterator;
     }
 
     @Whitelisted
     public Iterable<CommitStatusGroovyObject> getStatuses() {
         try {
-            return commitService.getStatuses(base, commit.getSha())
+            return getCommitService().getStatuses(base, commit.getSha())
                     .stream()
                     .map(CommitStatusGroovyObject::new)
                     .collect(toList());
@@ -167,9 +174,10 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
         comment.setPosition(position);
         try {
             return new ReviewCommentGroovyObject(
-                    commitService.addComment(base, commit.getSha(), comment),
+                    jobId,
                     base,
-                    commitService);
+                    getCommitService().addComment(base, commit.getSha(), comment),
+                    getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -199,7 +207,7 @@ public class CommitGroovyObject extends GroovyObjectSupport implements Serializa
         commitStatus.setTargetUrl(targetUrl);
         try {
             return new CommitStatusGroovyObject(
-                    commitService.createStatus(base, commit.getSha(), commitStatus));
+                    getCommitService().createStatus(base, commit.getSha(), commitStatus));
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }

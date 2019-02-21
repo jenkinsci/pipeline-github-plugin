@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.pipeline.github;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
 import hudson.model.Job;
+import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMSource;
 import org.eclipse.egit.github.core.RepositoryId;
@@ -31,7 +32,7 @@ public class GitHubHelper {
 
     private final static Logger LOG = LoggerFactory.getLogger(GitHubHelper.class);
 
-    private GitHubHelper(){
+    private GitHubHelper() {
         // go away
     }
 
@@ -103,6 +104,14 @@ public class GitHubHelper {
 
     public static String userToLogin(final User user) {
         return user == null ? null : user.getLogin();
+    }
+
+    public static Job getJob(final String jobId) {
+        final Job job = Jenkins.get().getItemByFullName(jobId, Job.class);
+        if (job == null) {
+            throw new IllegalStateException("Unable to find Job: " + jobId);
+        }
+        return job;
     }
 
 }

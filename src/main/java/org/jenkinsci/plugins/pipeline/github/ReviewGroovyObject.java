@@ -16,9 +16,7 @@ public class ReviewGroovyObject extends GroovyObjectSupport implements Serializa
     private final Review review;
 
     ReviewGroovyObject(final Review review) {
-        Objects.requireNonNull(review, "review cannot be null");
-
-        this.review = review;
+        this.review = Objects.requireNonNull(review, "review cannot be null");
     }
 
     @Whitelisted

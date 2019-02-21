@@ -25,21 +25,26 @@ import java.util.Objects;
 public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private String jobId;
     private final RepositoryId base;
-    private final ExtendedCommitService commitService;
-
     private ExtendedCommitComment commitComment;
+    private transient ExtendedCommitService commitService;
 
-    ReviewCommentGroovyObject(final ExtendedCommitComment commitComment,
+    ReviewCommentGroovyObject(final String jobId,
                               final RepositoryId base,
+                              final ExtendedCommitComment commitComment,
                               final ExtendedCommitService commitService) {
-        Objects.requireNonNull(commitComment, "commitComment cannot be null");
-        Objects.requireNonNull(base, "base cannot be null");
-        Objects.requireNonNull(commitService, "commitService cannot be null");
+        this.jobId = Objects.requireNonNull(jobId, "jobId cannot be null");
+        this.base = Objects.requireNonNull(base, "base cannot be null");
+        this.commitComment = Objects.requireNonNull(commitComment, "commitComment cannot be null");
+        this.commitService = Objects.requireNonNull(commitService, "commitService cannot be null");
+    }
 
-        this.commitComment = commitComment;
-        this.base = base;
-        this.commitService = commitService;
+    private ExtendedCommitService getCommitService() {
+        if (commitService == null) {
+            commitService = new ExtendedCommitService(GitHubHelper.getGitHubClient(GitHubHelper.getJob(jobId)));
+        }
+        return commitService;
     }
 
     @Whitelisted
@@ -131,7 +136,7 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
         edit.setId(commitComment.getId());
         edit.setBody(body);
         try {
-            commitComment = commitService.editComment2(base, edit);
+            commitComment = getCommitService().editComment2(base, edit);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -140,7 +145,7 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
     @Whitelisted
     public void delete() {
         try {
-            commitService.deleteComment(base, commitComment.getId());
+            getCommitService().deleteComment(base, commitComment.getId());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -150,7 +155,7 @@ public class ReviewCommentGroovyObject extends GroovyObjectSupport implements Se
     public void replyTo(final String body) {
         Objects.requireNonNull(body, "body is a required argument");
         try {
-            commitService.replyToComment(base, commitComment.getCommitId(), (int) commitComment.getId(), body);
+            getCommitService().replyToComment(base, commitComment.getCommitId(), (int) commitComment.getId(), body);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }

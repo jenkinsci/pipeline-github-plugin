@@ -19,9 +19,7 @@ public class CommitFileGroovyObject extends GroovyObjectSupport implements Seria
     private final CommitFile file;
 
     CommitFileGroovyObject(final CommitFile file) {
-        Objects.requireNonNull(file, "file cannot be null");
-
-        this.file = file;
+        this.file = Objects.requireNonNull(file, "file cannot be null");
     }
 
     @Whitelisted

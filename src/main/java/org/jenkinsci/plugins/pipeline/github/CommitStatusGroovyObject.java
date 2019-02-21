@@ -20,9 +20,7 @@ public class CommitStatusGroovyObject extends GroovyObjectSupport implements Ser
     private final CommitStatus commitStatus;
 
     CommitStatusGroovyObject(final CommitStatus commitStatus) {
-        Objects.requireNonNull(commitStatus, "commitStatus cannot be null");
-
-        this.commitStatus = commitStatus;
+        this.commitStatus = Objects.requireNonNull(commitStatus, "commitStatus cannot be null");
     }
 
     @Whitelisted

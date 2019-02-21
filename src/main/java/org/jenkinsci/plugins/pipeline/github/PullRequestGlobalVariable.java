@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
 
@@ -22,7 +23,11 @@ public class PullRequestGlobalVariable extends GlobalVariable {
     @Nonnull
     @Override
     public Object getValue(@Nonnull final CpsScript script) throws Exception {
-        return new PullRequestGroovyObject(script);
+        final Run<?, ?> build = script.$build();
+        if (build == null) {
+            throw new IllegalStateException("No associated build");
+        }
+        return new PullRequestGroovyObject(build.getParent());
     }
 
 }

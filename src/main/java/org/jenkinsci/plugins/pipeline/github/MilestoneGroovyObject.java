@@ -7,6 +7,7 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Groovy wrapper over {@link Milestone}
@@ -17,10 +18,12 @@ import java.util.Date;
 public class MilestoneGroovyObject extends GroovyObjectSupport implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private final String jobId;
     private final ExtendedMilestone milestone;
 
-    MilestoneGroovyObject(final ExtendedMilestone milestone) {
-        this.milestone = milestone;
+    MilestoneGroovyObject(final String jobId, final ExtendedMilestone milestone) {
+        this.jobId = Objects.requireNonNull(jobId, "jobId cannot be null");
+        this.milestone = Objects.requireNonNull(milestone, "milestone cannot be null");
     }
 
     @Whitelisted

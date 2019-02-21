@@ -25,18 +25,27 @@ import java.util.Objects;
 public class IssueCommentGroovyObject extends GroovyObjectSupport implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private final String jobId;
     private final RepositoryId base;
-    private final IssueService issueService;
     private Comment comment;
 
-    IssueCommentGroovyObject(final Comment comment, final RepositoryId base, final IssueService issueService) {
-        Objects.requireNonNull(comment, "comment cannot be null");
-        Objects.requireNonNull(base, "base cannot be null");
-        Objects.requireNonNull(issueService, "issueService cannot be null");
+    private transient IssueService issueService;
 
-        this.comment = comment;
-        this.base = base;
-        this.issueService = issueService;
+    IssueCommentGroovyObject(final String jobId,
+                             final Comment comment,
+                             final RepositoryId base,
+                             final IssueService issueService) {
+        this.jobId = Objects.requireNonNull(jobId, "jobId cannot be null");
+        this.comment = Objects.requireNonNull(comment, "comment cannot be null");
+        this.base = Objects.requireNonNull(base, "base cannot be null");
+        this.issueService = Objects.requireNonNull(issueService, "issueService cannot be null");
+    }
+
+    private IssueService getIssueService() {
+        if (issueService == null) {
+            issueService = new IssueService(GitHubHelper.getGitHubClient(GitHubHelper.getJob(jobId)));
+        }
+        return issueService;
     }
 
     @Whitelisted
@@ -85,7 +94,7 @@ public class IssueCommentGroovyObject extends GroovyObjectSupport implements Ser
         edit.setId(comment.getId());
         edit.setBody(body);
         try {
-            comment = issueService.editComment(base, edit);
+            comment = getIssueService().editComment(base, edit);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -94,7 +103,7 @@ public class IssueCommentGroovyObject extends GroovyObjectSupport implements Ser
     @Whitelisted
     public void delete() {
         try {
-            issueService.deleteComment(base, comment.getId());
+            getIssueService().deleteComment(base, comment.getId());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
