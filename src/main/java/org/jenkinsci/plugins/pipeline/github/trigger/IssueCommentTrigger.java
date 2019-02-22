@@ -16,7 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -43,21 +46,24 @@ public class IssueCommentTrigger extends Trigger<WorkflowJob> {
         super.start(project, newInstance);
         // we only care about pull requests
         if (SCMHead.HeadByItem.findHead(project) instanceof PullRequestSCMHead) {
-            DescriptorImpl.jobs.put(getKey(project), project);
+            DescriptorImpl.jobs
+                    .computeIfAbsent(getKey(project), key -> new HashSet<>())
+                    .add(project);
         }
     }
 
     @Override
     public void stop() {
         if (SCMHead.HeadByItem.findHead(job) instanceof PullRequestSCMHead) {
-            DescriptorImpl.jobs.put(getKey(job), job);
+            DescriptorImpl.jobs.getOrDefault(getKey(job), Collections.emptySet())
+                    .remove(job);
         }
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private String getKey(final WorkflowJob project) {
-        GitHubSCMSource scmSource = (GitHubSCMSource) SCMSource.SourceByItem.findSource(project);
-        PullRequestSCMHead scmHead = (PullRequestSCMHead) SCMHead.HeadByItem.findHead(project);
+        final GitHubSCMSource scmSource = (GitHubSCMSource) SCMSource.SourceByItem.findSource(project);
+        final PullRequestSCMHead scmHead = (PullRequestSCMHead) SCMHead.HeadByItem.findHead(project);
 
         return String.format("%s/%s/%d",
                 scmSource.getRepoOwner(),
@@ -78,15 +84,15 @@ public class IssueCommentTrigger extends Trigger<WorkflowJob> {
     @Symbol("issueCommentTrigger")
     @Extension
     public static class DescriptorImpl extends TriggerDescriptor {
-        private transient static final Map<String, WorkflowJob> jobs = new ConcurrentHashMap<>();
+        private transient static final Map<String, Set<WorkflowJob>> jobs = new ConcurrentHashMap<>();
 
         @Override
         public boolean isApplicable(final Item item) {
             return false; // this is not configurable from the ui.
         }
 
-        public WorkflowJob getJob(final String key) {
-            return jobs.get(key);
+        public Set<WorkflowJob> getJobs(final String key) {
+            return jobs.getOrDefault(key, Collections.emptySet());
         }
     }
 

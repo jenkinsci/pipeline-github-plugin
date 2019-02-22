@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Listens for GitHub events.
@@ -95,14 +96,13 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         }
 
         // create key for this comment's PR
-        String key = String.format("%s/%s/%d",
+        final String key = String.format("%s/%s/%d",
                 issueCommentEvent.getRepository().getOwnerName(),
                 issueCommentEvent.getRepository().getName(),
                 issueCommentEvent.getIssue().getNumber());
 
         // lookup trigger
-        IssueCommentTrigger.DescriptorImpl triggerDescriptor =
-                (IssueCommentTrigger.DescriptorImpl) Jenkins.getInstance()
+        final IssueCommentTrigger.DescriptorImpl triggerDescriptor = (IssueCommentTrigger.DescriptorImpl) Jenkins.get()
                 .getDescriptor(IssueCommentTrigger.class);
 
         if (triggerDescriptor == null) {
@@ -110,21 +110,19 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
             return;
         }
 
-        // lookup job
-        WorkflowJob job = triggerDescriptor.getJob(key);
-
-        if (job == null) {
-            LOG.debug("No job found matching key: {}", key);
-        } else {
-            Optional<IssueCommentTrigger> matchingTrigger = job.getTriggersJobProperty()
+        // lookup jobs
+        for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
+            // find triggers
+            final List<IssueCommentTrigger> matchingTriggers = job.getTriggersJobProperty()
                     .getTriggers()
                     .stream()
-                    .filter(t -> t instanceof IssueCommentTrigger)
+                    .filter(IssueCommentTrigger.class::isInstance)
                     .map(IssueCommentTrigger.class::cast)
                     .filter(t -> triggerMatches(t, issueCommentEvent.getComment(), job))
-                    .findAny();
+                    .collect(Collectors.toList());
 
-            if (matchingTrigger.isPresent()) {
+            // check if they have authorization
+            for (final IssueCommentTrigger matchingTrigger : matchingTriggers) {
                 String commentAuthor = issueCommentEvent.getComment().getUserName();
                 boolean authorized = isAuthorized(job, commentAuthor);
 
@@ -133,19 +131,16 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                             new IssueCommentCause(
                                     issueCommentEvent.getComment().getUserName(),
                                     issueCommentEvent.getComment().getBody(),
-                                    matchingTrigger.get().getCommentPattern()));
+                                    matchingTrigger.getCommentPattern()));
                     LOG.info("Job: {} triggered by IssueComment: {}",
                             job.getFullName(), issueCommentEvent.getComment());
                 } else {
                     LOG.warn("Job: {}, IssueComment: {}, Comment Author: {} is not a collaborator, " +
-                             "and is therefore not authorized to trigger a build.",
+                                    "and is therefore not authorized to trigger a build.",
                             job.getFullName(),
                             issueCommentEvent.getComment(),
                             commentAuthor);
                 }
-            } else {
-                LOG.debug("Job: {}, IssueComment: {}, No matching triggers could be found for this comment.",
-                        job.getFullName(), issueCommentEvent.getComment());
             }
         }
     }
@@ -175,7 +170,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
 
     @Override
     protected Set<GHEvent> events() {
-        Set<GHEvent> events = new HashSet<>();
+        final Set<GHEvent> events = new HashSet<>();
 //        events.add(GHEvent.PULL_REQUEST_REVIEW_COMMENT);
 //        events.add(GHEvent.COMMIT_COMMENT);
         events.add(GHEvent.ISSUE_COMMENT);
