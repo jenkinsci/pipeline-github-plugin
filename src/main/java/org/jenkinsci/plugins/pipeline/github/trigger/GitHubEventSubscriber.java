@@ -75,8 +75,6 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
     }
 
     private void handleIssueComment(final GHSubscriberEvent event) {
-        GHEventPayload.IssueComment issueCommentEvent;
-
         // we only care about created or updated events
         switch (event.getType()) {
             case CREATED:
@@ -87,12 +85,23 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         }
 
         // decode payload
+        final GHEventPayload.IssueComment issueCommentEvent;
         try {
             issueCommentEvent = GitHub.offline()
                     .parseEventPayload(new StringReader(event.getPayload()), GHEventPayload.IssueComment.class);
         } catch (final IOException e) {
             LOG.error("Unable to parse the payload of GHSubscriberEvent: {}", event, e);
             return;
+        }
+
+        switch (issueCommentEvent.getAction()) {
+            case "created":
+            case "edited":
+                break;
+            default:
+                LOG.debug("Ignoring IssueComment: {} with Action: {}",
+                        issueCommentEvent.getComment(), issueCommentEvent.getAction());
+                return;
         }
 
         // create key for this comment's PR
