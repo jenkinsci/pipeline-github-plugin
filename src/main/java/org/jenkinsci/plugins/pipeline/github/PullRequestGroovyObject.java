@@ -126,6 +126,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         return milestoneService;
     }
 
+    @Whitelisted
+    public PullRequestGroovyObject switchPullRequest(int pullRequestNum) {
+        this.pullRequest = getPullRequestService().getPullRequest(base, pullRequestNum);
+        return this;
+    }
 
     @Whitelisted
     public long getId() {

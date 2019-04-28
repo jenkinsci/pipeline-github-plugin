@@ -256,6 +256,9 @@ Returns the merge's SHA/commit id.
 #### Misc
 > void setCredentials(String userName, String password)
 
+#### Switch PullRequest
+> PullRequestGroovyObject switchPullRequest(int pullRequestNum)
+
 # Auxiliary Classes
 
 ## CommitStatus
