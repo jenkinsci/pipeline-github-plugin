@@ -1,7 +1,10 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
 import hudson.Extension;
+import hudson.model.CauseAction;
 import hudson.model.Item;
+import hudson.model.ParameterValue;
+import hudson.model.StringParameterValue;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceOwner;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -119,6 +123,12 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
             return;
         }
 
+        // create values for the action if a new job is triggered afterward
+        ArrayList<ParameterValue> values = new ArrayList<ParameterValue>();
+        values.add(new StringParameterValue("GITHUB_COMMENT", String.valueOf(issueCommentEvent.getComment().getBody())));
+        values.add(new StringParameterValue("GITHUB_COMMENT_AUTHOR", String.valueOf(issueCommentEvent.getComment().getUserName())));
+
+
         // lookup jobs
         for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
             // find triggers
@@ -136,11 +146,14 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                 boolean authorized = isAuthorized(job, commentAuthor);
 
                 if (authorized) {
-                    job.scheduleBuild(
-                            new IssueCommentCause(
-                                    issueCommentEvent.getComment().getUserName(),
-                                    issueCommentEvent.getComment().getBody(),
-                                    matchingTrigger.getCommentPattern()));
+                    job.scheduleBuild2(
+                            Jenkins.getInstance().getQuietPeriod(),
+                            new CauseAction(new IssueCommentCause(
+                                        issueCommentEvent.getComment().getUserName(),
+                                        issueCommentEvent.getComment().getBody(),
+                                        matchingTrigger.getCommentPattern())),
+                            new GitHubParametersAction(values));
+
                     LOG.info("Job: {} triggered by IssueComment: {}",
                             job.getFullName(), issueCommentEvent.getComment());
                 } else {
