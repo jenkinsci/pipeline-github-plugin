@@ -120,6 +120,14 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>scm-api</artifactId>
+            <version>2.2.3</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
             <!--<artifactId>workflow-multibranch</artifactId>-->
