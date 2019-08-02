@@ -1,18 +1,12 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
 import hudson.model.FreeStyleProject;
-import hudson.model.Label;
-import jenkins.branch.BranchSource;
 import jenkins.scm.api.SCMEvent;
 import jenkins.scm.api.SCMEvents;
 import jenkins.scm.api.SCMHeadEvent;
 import jenkins.scm.api.SCMSourceEvent;
 import org.apache.commons.io.IOUtils;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,7 +15,6 @@ import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.github.GHEvent;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -68,46 +61,6 @@ public class GitHubEventSubscriberTest {
     public void given_ghCommentEventCreated_then_createdHeadEventFired() throws Exception {
         TestSCMEventListener.setReceived(true);
 
-        GitHubEventSubscriber subscriber = new GitHubEventSubscriber();
-
-        firedEventType = SCMEvent.Type.CREATED;
-        ghEvent = callOnEvent(subscriber, "GitHubEventSubscriberTest/payload/comment.json", GHEvent.ISSUE_COMMENT);
-        waitAndAssertReceived(true);
-    }
-
-    @Test
-    public void given_ghCommentEventCreated_and_project_then_env_variables_are_created() throws Exception {
-        TestSCMEventListener.setReceived(true);
-        WorkflowJob p = jRule.jenkins.createProject(WorkflowJob.class, "demo");
-        jRule.createOnlineSlave(Label.get("remote"));
-        p.setDefinition(new CpsFlowDefinition(
-                "pipeline {\n" +
-                        "  agent { label 'remote' }\n" +
-                        "  triggers {\n" +
-                        "    issueCommentTrigger('test.*')\n" +
-                        "  }\n" +
-                        "  stages {\n" +
-                        "    stage('Bar') {\n" +
-                        "      options { skipDefaultCheckout() }\n" +
-                        "      steps {\n" +
-                        "        echo 'hi'\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  }\n" +
-                        "}\n"));
-
-        GitHubEventSubscriber subscriber = new GitHubEventSubscriber();
-
-        firedEventType = SCMEvent.Type.CREATED;
-        ghEvent = callOnEvent(subscriber, "GitHubEventSubscriberTest/payload/comment.json", GHEvent.ISSUE_COMMENT);
-        waitAndAssertReceived(true);
-    }
-
-    @Test
-    public void given_ghCommentEventCreated_and_project_then_env_variables_are_created2() throws Exception {
-        WorkflowMultiBranchProject job = jRule.createProject(WorkflowMultiBranchProject.class);
-        job.setSourcesList(Arrays.asList(new BranchSource(new GitHubSCMSource("super-mario-bros-pipelines", "pipeline"))));
-        job.scheduleBuild();
         GitHubEventSubscriber subscriber = new GitHubEventSubscriber();
 
         firedEventType = SCMEvent.Type.CREATED;
