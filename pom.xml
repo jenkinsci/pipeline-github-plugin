@@ -10,10 +10,12 @@
     </parent>
 
     <artifactId>pipeline-github</artifactId>
-    <version>2.6-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
 
     <properties>
+        <revision>2.6</revision>
+        <changelist>-SNAPSHOT</changelist>
         <jenkins.version>2.128</jenkins.version>
         <java.level>8</java.level>
         <jenkins-test-harness.version>2.39</jenkins-test-harness.version>
@@ -37,7 +39,7 @@
         <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>HEAD</tag>
+        <tag>${scmTag}</tag>
     </scm>
 
     <repositories>
