@@ -740,13 +740,4 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void setCredentials(final String userName, final String password) {
         getGitHubClient().setCredentials(userName, password);
     }
-
-    @Whitelisted
-    public void deleteBranch(){
-        try {
-            getPullRequestService().deleteBranch(base,pullRequest.getBranchReference());
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
 }

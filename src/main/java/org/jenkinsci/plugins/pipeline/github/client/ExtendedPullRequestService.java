@@ -224,18 +224,4 @@ public class ExtendedPullRequestService extends PullRequestService {
         params.put("reviewers", reviewers);
         getClient().delete(uri.toString(), params);
     }
-
-    public void deleteBranch(final IRepositoryIdProvider repository,
-        final String branchReference
-    ) throws IOException {
-        String repoId = this.getId(repository);
-        StringBuilder uri = new StringBuilder("/repos");
-        uri.append('/').append(repoId);
-        uri.append("/git");
-        uri.append("/refs");
-        uri.append("/heads");
-        uri.append('/');
-        uri.append(branchReference);
-        getClient().delete(uri.toString());
-    }
 }
