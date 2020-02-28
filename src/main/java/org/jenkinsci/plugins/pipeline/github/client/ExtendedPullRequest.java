@@ -45,4 +45,8 @@ public class ExtendedPullRequest extends PullRequest {
     public void setMaintainerCanModify(final Boolean maintainerCanModify) {
         this.maintainerCanModify = maintainerCanModify;
     }
+
+    public String getBranchReference(){
+        return this.getHead().getRef();
+    }
 }

@@ -253,6 +253,9 @@ Returns the merge's SHA/commit id.
 
 > void deleteReviewRequests(List<String> reviewers)
 
+### Delete Branch
+> void deleteBranch()
+
 #### Misc
 > void setCredentials(String userName, String password)
 
@@ -583,4 +586,10 @@ pullRequest.createReviewRequests(['Spock', 'McCoy'])
 ### Deleting requested reviewers
 ```groovy
 pullRequest.deleteReviewRequests(['McCoy'])
+```
+
+### Deleting a branch of the pull request after Merging the pull request
+```groovy
+pullRequest.merge(pullRequest.title)
+pullRequest.deleteBranch()
 ```
