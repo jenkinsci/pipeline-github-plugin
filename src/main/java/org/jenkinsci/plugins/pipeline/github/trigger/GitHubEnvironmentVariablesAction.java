@@ -18,16 +18,16 @@ import java.util.List;
 
 
 @Restricted(NoExternalUse.class)
-public class GitHubParametersAction extends ParametersAction {
+public class GitHubEnvironmentVariablesAction extends ParametersAction {
 
     private List<ParameterValue> parameters;
 
-    public GitHubParametersAction(List<ParameterValue> parameters) {
+    public GitHubEnvironmentVariablesAction(List<ParameterValue> parameters) {
         super(parameters);
         this.parameters = parameters;
     }
 
-    public GitHubParametersAction(ParameterValue... parameters) {
+    public GitHubEnvironmentVariablesAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
 
@@ -56,7 +56,7 @@ public class GitHubParametersAction extends ParametersAction {
                                         @Nonnull EnvVars envs,
                                         @Nonnull TaskListener listener) throws IOException, InterruptedException {
 
-            GitHubParametersAction action = run.getAction(GitHubParametersAction.class);
+            GitHubEnvironmentVariablesAction action = run.getAction(GitHubEnvironmentVariablesAction.class);
             if (action != null) {
                 for (ParameterValue p : action.getParameters()) {
                     envs.put(p.getName(), String.valueOf(p.getValue()));

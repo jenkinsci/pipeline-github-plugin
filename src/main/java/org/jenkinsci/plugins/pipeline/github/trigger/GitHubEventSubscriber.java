@@ -128,7 +128,6 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         values.add(new StringParameterValue("GITHUB_COMMENT", String.valueOf(issueCommentEvent.getComment().getBody())));
         values.add(new StringParameterValue("GITHUB_COMMENT_AUTHOR", String.valueOf(issueCommentEvent.getComment().getUserName())));
 
-
         // lookup jobs
         for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
             // find triggers
@@ -152,7 +151,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                                         issueCommentEvent.getComment().getUserName(),
                                         issueCommentEvent.getComment().getBody(),
                                         matchingTrigger.getCommentPattern())),
-                            new GitHubParametersAction(values));
+                            new GitHubEnvironmentVariablesAction(values));
 
                     LOG.info("Job: {} triggered by IssueComment: {}",
                             job.getFullName(), issueCommentEvent.getComment());
