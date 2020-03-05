@@ -113,6 +113,13 @@ if (triggerCause) {
 }
 ```
 
+#### Environment variables
+
+The GitHub comment and author that triggered the build are exposed as environment variables (from version > 2.5).
+
+* `GITHUB_COMMENT`
+* `GITHUB_COMMENT_AUTHOR`
+
 # Global Variables
 
 ## `repository`
