@@ -586,6 +586,13 @@ for (requestedReviewer in pullRequest.requestedReviewers) {
 }
 ```
 
+### Listing a Pull Request's requested team reviewers
+```groovy
+for (requestedTeamReviewer in pullRequest.requestedTeamReviewers) {
+  echo "${requestedTeamReviewer} was requested to review this Pull Request"
+}
+```
+
 ### Listing a Pull Request's reviews
 ```groovy
 for (review in pullRequest.reviews) {
