@@ -256,9 +256,17 @@ Returns the merge's SHA/commit id.
 > void deleteComment(long commentId)
 
 ### Requested Reviewers
+> Iterable<String> getRequestedReviewers<>()
+
 > void createReviewRequests(List<String> reviewers)
 
+> void createTeamReviewRequests(List<String> teams)
+
+> Iterable<String> getRequestedTeamReviewers<>()
+
 > void deleteReviewRequests(List<String> reviewers)
+
+> void deleteTeamReviewRequests(List<String> teams)
 
 ### Delete Branch
 > void deleteBranch()
