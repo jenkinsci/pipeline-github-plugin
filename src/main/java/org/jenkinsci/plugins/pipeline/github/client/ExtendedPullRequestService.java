@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.pipeline.github.client;
 
 import com.google.gson.reflect.TypeToken;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
+import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.client.PageIterator;
@@ -177,6 +178,20 @@ public class ExtendedPullRequestService extends PullRequestService {
         return this.createPageIterator(request);
     }
 
+    public PageIterator<Team> pageRequestedTeamReviewers(final IRepositoryIdProvider repository, final int id) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/pulls");
+        uri.append('/').append(id);
+        uri.append("/requested_reviewers");
+
+        PagedRequest<Team> request = this.createPagedRequest(1, 100);
+        request.setUri(uri);
+        request.setType((new TypeToken<List<Team>>(){}).getType());
+        return this.createPageIterator(request);
+    }
+
     public PageIterator<Review> pageReviews(final IRepositoryIdProvider repository, final int id) {
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
@@ -192,10 +207,12 @@ public class ExtendedPullRequestService extends PullRequestService {
     }
 
     public void createReviewRequests(final IRepositoryIdProvider repository,
-                                     final int id,
-                                     final List<String> reviewers) throws IOException {
-        Objects.requireNonNull(reviewers, "reviewers cannot be null");
-
+                                final int id,
+                                final List<String> reviewers,
+                                final List<String> teamReviewers) throws IOException {
+        if (Objects.isNull(reviewers) && Objects.isNull(teamReviewers)) {
+            throw new IllegalArgumentException("Either reviewers or teamReviewers must be non-null");
+        }
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
@@ -204,15 +221,22 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("reviewers", reviewers);
+        if (!Objects.isNull(reviewers)) {
+            params.put("reviewers", reviewers);
+        }
+        if (!Objects.isNull(teamReviewers)) {
+            params.put("team_reviewers", teamReviewers);
+        }
         getClient().post(uri.toString(), params, ExtendedPullRequest.class);
     }
 
     public void deleteReviewRequests(final IRepositoryIdProvider repository,
                                      final int id,
-                                     final List<String> reviewers) throws IOException {
-        Objects.requireNonNull(reviewers, "reviewers cannot be null");
-
+                                     final List<String> reviewers,
+                                     final List<String> teamReviewers) throws IOException {
+        if (Objects.isNull(reviewers) && Objects.isNull(teamReviewers)) {
+            throw new IllegalArgumentException("Either reviewers or teamReviewers must be non-null");
+        }
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
@@ -221,7 +245,12 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("/requested_reviewers");
 
         Map<String, Object> params = new HashMap<>();
-        params.put("reviewers", reviewers);
+        if (!Objects.isNull(reviewers)) {
+            params.put("reviewers", reviewers);
+        }
+        if (!Objects.isNull(teamReviewers)) {
+            params.put("team_reviewers", teamReviewers);
+        }
         getClient().delete(uri.toString(), params);
     }
 

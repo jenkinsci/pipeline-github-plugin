@@ -595,6 +595,16 @@ pullRequest.createReviewRequests(['Spock', 'McCoy'])
 pullRequest.deleteReviewRequests(['McCoy'])
 ```
 
+### Requesting team reviewers
+```groovy
+pullRequest.createTeamReviewRequests(['justice-league'])
+```
+
+### Deleting requested team reviewers
+```groovy
+pullRequest.deleteTeamReviewRequests(['justice-league'])
+```
+
 ### Deleting a branch of the pull request after Merging the pull request
 ```groovy
 pullRequest.merge(pullRequest.title)
