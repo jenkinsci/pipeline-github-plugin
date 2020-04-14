@@ -178,6 +178,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public boolean isDraft() {
+        return pullRequest.isDraft();
+    }
+
+    @Whitelisted
     public MilestoneGroovyObject getMilestone() {
         return Optional.ofNullable(pullRequest.getMilestone())
                 .map(Milestone::getNumber)

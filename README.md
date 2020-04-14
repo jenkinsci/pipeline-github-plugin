@@ -215,6 +215,7 @@ merged | `Boolean` | false
 mergeable | `Boolean` | false
 mergeCommitSha | `String` | false
 maintainerCanModify | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
+draft | `Boolean` | false
 
 
 ### Methods
