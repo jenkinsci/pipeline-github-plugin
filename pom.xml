@@ -25,7 +25,7 @@
 
     <name>Pipeline: GitHub</name>
     <description>Pipeline GitHub Support</description>
-    <url>https://wiki.jenkins.io/display/JENKINS/Pipeline+Github+Plugin</url>
+    <url>https://github.com/jenkinsci/pipeline-github-plugin</url>
 
     <licenses>
         <license>
