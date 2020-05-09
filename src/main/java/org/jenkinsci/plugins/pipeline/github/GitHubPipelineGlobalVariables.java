@@ -1,7 +1,7 @@
 package org.jenkinsci.plugins.pipeline.github;
 
 import hudson.Extension;
-import hudson.model.Run;;
+import hudson.model.Run;
 import jenkins.scm.api.SCMHead;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
