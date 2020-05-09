@@ -257,9 +257,17 @@ Returns the merge's SHA/commit id.
 > void deleteComment(long commentId)
 
 ### Requested Reviewers
+> Iterable<String> getRequestedReviewers<>()
+
 > void createReviewRequests(List<String> reviewers)
 
+> void createTeamReviewRequests(List<String> teams)
+
+> Iterable<String> getRequestedTeamReviewers<>()
+
 > void deleteReviewRequests(List<String> reviewers)
+
+> void deleteTeamReviewRequests(List<String> teams)
 
 ### Delete Branch
 > void deleteBranch()
@@ -579,6 +587,13 @@ for (requestedReviewer in pullRequest.requestedReviewers) {
 }
 ```
 
+### Listing a Pull Request's requested team reviewers
+```groovy
+for (requestedTeamReviewer in pullRequest.requestedTeamReviewers) {
+  echo "${requestedTeamReviewer} was requested to review this Pull Request"
+}
+```
+
 ### Listing a Pull Request's reviews
 ```groovy
 for (review in pullRequest.reviews) {
@@ -594,6 +609,16 @@ pullRequest.createReviewRequests(['Spock', 'McCoy'])
 ### Deleting requested reviewers
 ```groovy
 pullRequest.deleteReviewRequests(['McCoy'])
+```
+
+### Requesting team reviewers
+```groovy
+pullRequest.createTeamReviewRequests(['justice-league'])
+```
+
+### Deleting requested team reviewers
+```groovy
+pullRequest.deleteTeamReviewRequests(['justice-league'])
 ```
 
 ### Deleting a branch of the pull request after Merging the pull request

@@ -10,6 +10,7 @@ import org.eclipse.egit.github.core.Label;
 import org.eclipse.egit.github.core.Milestone;
 import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitComment;
@@ -298,6 +299,17 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public Iterable<String> getRequestedTeamReviewers() {
+        Stream<String> stream = StreamSupport
+                .stream(getPullRequestService().pageRequestedTeamReviewers(base, pullRequest.getNumber())
+                        .spliterator(), false)
+                .flatMap(Collection::stream)
+                .map(Team::getName);
+
+        return stream::iterator;
+    }
+
+    @Whitelisted
     public Iterable<ReviewGroovyObject> getReviews() {
         Stream<ReviewGroovyObject> stream = StreamSupport
             .stream(getPullRequestService().pageReviews(base, pullRequest.getNumber())
@@ -490,7 +502,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void createReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
-            getPullRequestService().createReviewRequests(base, pullRequest.getNumber(), reviewers);
+            getPullRequestService().createReviewRequests(base, pullRequest.getNumber(), reviewers, null);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -506,7 +518,40 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public void deleteReviewRequests(final List<String> reviewers) {
         Objects.requireNonNull(reviewers, "reviewers cannot be null");
         try {
-            getPullRequestService().deleteReviewRequests(base, pullRequest.getNumber(), reviewers);
+            getPullRequestService().deleteReviewRequests(base, pullRequest.getNumber(), reviewers, null);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+
+    @Whitelisted
+    public void createTeamReviewRequest(final String team) {
+        Objects.requireNonNull(team, "team cannot be null");
+        createTeamReviewRequests(Collections.singletonList(team));
+    }
+
+    @Whitelisted
+    public void createTeamReviewRequests(final List<String> teams) {
+        Objects.requireNonNull(teams, "teams cannot be null");
+        try {
+            getPullRequestService().createReviewRequests(base, pullRequest.getNumber(), null, teams);
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Whitelisted
+    public void deleteTeamReviewRequest(final String team) {
+        Objects.requireNonNull(team, "team cannot be null");
+        deleteTeamReviewRequests(Collections.singletonList(team));
+    }
+
+    @Whitelisted
+    public void deleteTeamReviewRequests(final List<String> teams) {
+        Objects.requireNonNull(teams, "teams cannot be null");
+        try {
+            getPullRequestService().deleteReviewRequests(base, pullRequest.getNumber(), null, teams);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
