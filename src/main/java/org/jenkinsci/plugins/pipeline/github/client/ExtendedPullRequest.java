@@ -11,6 +11,7 @@ public class ExtendedPullRequest extends PullRequest {
 
     private User closedBy;
     private boolean locked;
+    private boolean draft;
     private String mergeCommitSha;
     private Boolean maintainerCanModify;
 
@@ -28,6 +29,14 @@ public class ExtendedPullRequest extends PullRequest {
 
     public void setLocked(final boolean locked) {
         this.locked = locked;
+    }
+
+    public boolean isDraft() {
+        return draft;
+    }
+
+    public void setDraft(final boolean draft) {
+        this.draft = draft;
     }
 
     public String getMergeCommitSha() {
