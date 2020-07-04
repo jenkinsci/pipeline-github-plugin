@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.16</version>
+        <version>3.57</version>
         <relativePath />
     </parent>
 
@@ -16,10 +16,10 @@
     <properties>
         <revision>2.6</revision>
         <changelist>-SNAPSHOT</changelist>
-        <jenkins.version>2.128</jenkins.version>
+        <jenkins.version>2.138.4</jenkins.version>
         <java.level>8</java.level>
         <jenkins-test-harness.version>2.39</jenkins-test-harness.version>
-        <hpi-plugin.version>2.6</hpi-plugin.version>
+        <hpi-plugin.version>3.5</hpi-plugin.version>
         <stapler-plugin.version>1.17</stapler-plugin.version>
     </properties>
 
