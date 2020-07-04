@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>pipeline-github</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>2.6</version>
     <packaging>hpi</packaging>
 
     <properties>
@@ -39,7 +39,7 @@
         <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>${scmTag}</tag>
+        <tag>pipeline-github-2.6</tag>
     </scm>
 
     <repositories>
