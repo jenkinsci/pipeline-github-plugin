@@ -58,13 +58,8 @@ public class GitHubHelper {
         if (scmSource instanceof GitHubSCMSource) {
             GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
 
-            ExtendedGitHubClient client;
-            if (gitHubSource.getApiUri() == null) {
-                client = new ExtendedGitHubClient();
-            } else {
-                URI uri = URI.create(gitHubSource.getApiUri());
-                client = new ExtendedGitHubClient(uri.getHost(), uri.getPort(), uri.getScheme());
-            }
+            URI uri = URI.create(gitHubSource.getApiUri());
+            ExtendedGitHubClient client = new ExtendedGitHubClient(uri.getHost(), uri.getPort(), uri.getScheme());
 
             // configure credentials
             if (gitHubSource.getCredentialsId() != null) {
