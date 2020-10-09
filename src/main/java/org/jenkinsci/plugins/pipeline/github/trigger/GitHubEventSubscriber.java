@@ -16,6 +16,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.kohsuke.github.GHEvent;
 import org.kohsuke.github.GHEventPayload;
 import org.kohsuke.github.GHIssueComment;
+import org.kohsuke.github.GHPullRequestReview;
 import org.kohsuke.github.GitHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,9 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         switch (event.getGHEvent()) {
             case ISSUE_COMMENT:
                 handleIssueComment(event);
+                break;
+            case PULL_REQUEST_REVIEW:
+                handlePullRequestReview(event);
                 break;
             default:
                 // no-op
@@ -189,12 +193,115 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         return false;
     }
 
+    private void handlePullRequestReview(final GHSubscriberEvent event) {
+        // we only care about created or updated events
+        switch (event.getType()) {
+            case CREATED:
+            case UPDATED:
+            // case: SUBMITTED:
+                break;
+            default:
+                return;
+        }
+        // decode payload
+        final GHEventPayload.PullRequestReview pullRequestReview;
+        try {
+            pullRequestReview = GitHub.offline()
+                    .parseEventPayload(new StringReader(event.getPayload()), GHEventPayload.PullRequestReview.class);
+        } catch (final IOException e) {
+            LOG.error("Unable to parse the payload of GHSubscriberEvent: {}", event, e);
+            return;
+        }
+
+        switch (pullRequestReview.getAction()) {
+            case "submitted":
+                break;
+            default:
+                LOG.debug("Ignoring pullRequestReview: {} with Action: {}",
+                pullRequestReview.getReview(), pullRequestReview.getAction());
+                return;
+        }
+
+        final String key = String.format("%s/%s/%d",
+                pullRequestReview.getRepository().getOwnerName(),
+                pullRequestReview.getRepository().getName(),
+                pullRequestReview.getPullRequest().getNumber());
+
+        // lookup trigger
+        final PullRequestReviewTrigger.DescriptorImpl triggerDescriptor = (PullRequestReviewTrigger.DescriptorImpl) Jenkins.get()
+                .getDescriptor(PullRequestReviewTrigger.class);
+
+        if (triggerDescriptor == null) {
+            LOG.error("Unable to find the PullRequestReview Trigger, this shouldn't happen.");
+            return;
+        }
+        String reviewer = pullRequestReview.getSender().getLogin();
+
+        // create values for the action if a new job is triggered afterward
+        ArrayList<ParameterValue> reviewEnvVars = new ArrayList<ParameterValue>();
+        reviewEnvVars.add(new StringParameterValue("GITHUB_REVIEW_COMMENT", String.valueOf(pullRequestReview.getReview().getBody())));
+        reviewEnvVars.add(new StringParameterValue("GITHUB_REVIEW_AUTHOR", reviewer));
+        reviewEnvVars.add(new StringParameterValue("GITHUB_REVIEW_STATE", pullRequestReview.getReview().getState().name()));
+
+
+        for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
+            // find triggers
+            final List<PullRequestReviewTrigger> matchingTriggers = job.getTriggersJobProperty()
+                    .getTriggers()
+                    .stream()
+                    .filter(PullRequestReviewTrigger.class::isInstance)
+                    .map(PullRequestReviewTrigger.class::cast)
+                    .filter(t -> triggerMatches(t, pullRequestReview.getReview(), job))
+                    .collect(Collectors.toList());
+
+            // check if they have authorization
+            for (final PullRequestReviewTrigger matchingTrigger : matchingTriggers) {
+                boolean authorized = isAuthorized(job, reviewer);
+
+                if (authorized) {
+                    job.scheduleBuild2(
+                            Jenkins.get().getQuietPeriod(),
+                            new CauseAction(new PullRequestReviewCause(
+                                        reviewer,
+                                        pullRequestReview.getReview().getState().name().toLowerCase(),
+                                        pullRequestReview.getReview().getBody(),
+                                        matchingTrigger.getReviewStates())),
+                            new GitHubEnvironmentVariablesAction(reviewEnvVars));
+
+                    LOG.info("Job: {} triggered by PullRequestReview: {}",
+                            job.getFullName(), pullRequestReview.getReview());
+                } else {
+                    LOG.warn("Job: {}, PullRequestReview: {}, Reviewer: {} is not a collaborator, " +
+                                    "and is therefore not authorized to trigger a build.",
+                            job.getFullName(),
+                            pullRequestReview.getReview(),
+                            reviewer);
+                }
+            }
+        }
+    }
+
+    private boolean triggerMatches(final PullRequestReviewTrigger trigger,
+                                   final GHPullRequestReview review,
+                                   final WorkflowJob job) {
+        if (trigger.matches(review.getState().name().toLowerCase())) {
+            LOG.debug("Job: {}, PullRequestReview: {} matched one of the states: {}",
+                    job.getFullName(), review, trigger.getReviewStates());
+            return true;
+        } else {
+            LOG.debug("Job: {}, PullRequestReview: {}, state did not match the states: {}",
+                    job.getFullName(), review, trigger.getReviewStates());
+        }
+        return false;
+    }
+
     @Override
     protected Set<GHEvent> events() {
         final Set<GHEvent> events = new HashSet<>();
 //        events.add(GHEvent.PULL_REQUEST_REVIEW_COMMENT);
 //        events.add(GHEvent.COMMIT_COMMENT);
         events.add(GHEvent.ISSUE_COMMENT);
+        events.add(GHEvent.PULL_REQUEST_REVIEW);
         return Collections.unmodifiableSet(events);
     }
 }

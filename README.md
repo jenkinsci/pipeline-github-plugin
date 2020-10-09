@@ -49,6 +49,9 @@ If you plan to use this plugin to add/modify/remove comments, labels, commit sta
 
 This plugin adds the following pipeline triggers
 
+* issueCommentTrigger
+* pullRequestReview
+
 ## issueCommentTrigger
 
 ### Requirements
@@ -119,6 +122,60 @@ The GitHub comment and author that triggered the build are exposed as environmen
 
 * `GITHUB_COMMENT`
 * `GITHUB_COMMENT_AUTHOR`
+
+## pullRequestReview
+
+### Parameters
+
+- `reviewStates` (__Optional__) - A Java array of the PR review states you wish to trigger the build with. If not specified it will trigger for any review state. Possible states are `pending, approved, changes_requested, commented, dismissed`
+
+### Usage
+
+#### Scripted Pipeline:
+```groovy
+properties([
+    pipelineTriggers([
+      pullRequestReview(reviewStates: ['approved'])
+    ])
+])
+```
+
+#### Declarative Pipeline:
+```groovy
+pipeline {
+    triggers {
+      pullRequestReview(reviewStates: ['approved'])
+    }
+}
+```
+
+#### Detecting whether a build was started by the trigger in a script:
+
+Note that the following uses `currentBuild.rawBuild` and should therefore only
+be done in a `@NonCPS` context. See [the workflow-cps-plugin Technical Design
+](https://github.com/jenkinsci/workflow-cps-plugin/blob/master/README.md#technical-design)
+for more information.
+
+```groovy
+def triggerCause = currentBuild.rawBuild.getCause(org.jenkinsci.plugins.pipeline.github.trigger.PullRequestReviewCause)
+
+if (triggerCause) {
+    echo("Build was started by ${triggerCause.userLogin}, who reviewed the PR: " +
+         "\"${triggerCause.state}\", which matches one of " +
+         "\"${triggerCause.reviewStates}\" trigger pattern.")
+} else {
+    echo('Build was not started by a trigger')
+}
+```
+
+#### Environment variables
+
+The GitHub review comment and author that triggered the build are exposed as environment variables (from version > 2.8).
+
+* `GITHUB_REVIEW_COMMENT`
+* `GITHUB_REVIEW_AUTHOR`
+* `GITHUB_REVIEW_STATE`
+
 
 # Global Variables
 
