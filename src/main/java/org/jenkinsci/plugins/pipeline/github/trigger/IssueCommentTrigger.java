@@ -68,7 +68,7 @@ public class IssueCommentTrigger extends Trigger<WorkflowJob> {
         return String.format("%s/%s/%d",
                 scmSource.getRepoOwner(),
                 scmSource.getRepository(),
-                scmHead.getNumber());
+                scmHead.getNumber()).toLowerCase();
     }
 
     public String getCommentPattern() {
@@ -92,7 +92,7 @@ public class IssueCommentTrigger extends Trigger<WorkflowJob> {
         }
 
         public Set<WorkflowJob> getJobs(final String key) {
-            return jobs.getOrDefault(key, Collections.emptySet());
+            return jobs.getOrDefault(key.toLowerCase(), Collections.emptySet());
         }
     }
 
