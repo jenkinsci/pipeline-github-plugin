@@ -10,12 +10,11 @@
     </parent>
 
     <artifactId>pipeline-github</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
 
     <properties>
-        <revision>2.8</revision>
-        <changelist>-SNAPSHOT</changelist>
+        <changelist>999999-SNAPSHOT</changelist>
         <jenkins.version>2.164.3</jenkins.version>
         <java.level>8</java.level>
         <jenkins-test-harness.version>2.39</jenkins-test-harness.version>
