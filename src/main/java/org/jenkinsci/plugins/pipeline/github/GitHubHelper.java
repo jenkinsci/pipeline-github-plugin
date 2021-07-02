@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -60,6 +63,13 @@ public class GitHubHelper {
 
             URI uri = URI.create(gitHubSource.getApiUri());
             ExtendedGitHubClient client = new ExtendedGitHubClient(uri.getHost(), uri.getPort(), uri.getScheme());
+
+            String proxyHost = System.getenv("PROXY_HOST");
+            String proxyPort = System.getenv("PROXY_PORT");
+            if (proxyHost != null && proxyPort != null) {
+                SocketAddress addr = new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort));
+                client.setProxy(new Proxy(Proxy.Type.HTTP, addr));
+            }
 
             // configure credentials
             if (gitHubSource.getCredentialsId() != null) {
