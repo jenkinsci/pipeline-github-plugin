@@ -43,12 +43,12 @@ public class PullRequestReviewTrigger  extends Trigger<WorkflowJob> {
   public PullRequestReviewTrigger() {}
 
   public String[] getReviewStates() {
-      return reviewStates;
+      return Arrays.copyOf(reviewStates, reviewStates.length);
   }
 
   @DataBoundSetter
   public void setReviewStates(@Nonnull final String [] reviewStates) {
-      this.reviewStates = reviewStates;
+      this.reviewStates = Arrays.copyOf(reviewStates, reviewStates.length);
   }
 
   @Override

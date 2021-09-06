@@ -3,6 +3,8 @@ package org.jenkinsci.plugins.pipeline.github.trigger;
 import hudson.model.Cause;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 
+import java.util.Arrays;
+
 /**
  * Represents the user who reviewed the PR that triggered the build.
  *
@@ -19,7 +21,7 @@ public class PullRequestReviewCause extends Cause {
     this.userLogin = userLogin;
     this.state = state;
     this.comment = comment;
-    this.reviewStates = reviewStates;
+    this.reviewStates =  Arrays.copyOf(reviewStates, reviewStates.length);
   }
 
   @Whitelisted
@@ -39,7 +41,7 @@ public class PullRequestReviewCause extends Cause {
 
   @Whitelisted
   public String[] getReviewStates() {
-      return reviewStates;
+       return Arrays.copyOf(reviewStates, reviewStates.length);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.CauseAction;
 import hudson.model.Item;
@@ -193,6 +194,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         return false;
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private void handlePullRequestReview(final GHSubscriberEvent event) {
         // we only care about created or updated events
         switch (event.getType()) {
@@ -281,6 +283,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         }
     }
 
+    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private boolean triggerMatches(final PullRequestReviewTrigger trigger,
                                    final GHPullRequestReview review,
                                    final WorkflowJob job) {
