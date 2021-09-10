@@ -6,6 +6,7 @@ Table of Contents
   * [Credentials](#credentials)
   * [Triggers](#triggers)
     * [issueCommentTrigger](#issuecommenttrigger)
+    * [pullRequestReview](#pullrequestreview)
   * [Global Variables](#global-variables)
     * [pullRequest](#pullrequest)
   * [Auxiliary Classes](#auxiliary-classes)
