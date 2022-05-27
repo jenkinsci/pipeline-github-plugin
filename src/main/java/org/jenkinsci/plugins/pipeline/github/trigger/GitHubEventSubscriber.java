@@ -172,12 +172,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
     }
 
     private boolean isAuthorized(final WorkflowJob job, final String commentAuthor) {
-        return GitHubHelper.getCollaborators(job)
-                .stream()
-                .filter(commentAuthor::equals)
-                .findAny()
-                .map(a -> Boolean.TRUE)
-                .orElse(Boolean.FALSE);
+        return GitHubHelper.isAuthorized(job, commentAuthor);
     }
 
     private boolean triggerMatches(final IssueCommentTrigger trigger,

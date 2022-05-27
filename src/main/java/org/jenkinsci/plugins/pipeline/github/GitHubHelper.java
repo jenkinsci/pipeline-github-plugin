@@ -36,6 +36,20 @@ public class GitHubHelper {
         // go away
     }
 
+    public static Boolean isAuthorized(@Nonnull final Job<?,?> job, @Nonnull final String User) {
+        ExtendedGitHubClient client = getGitHubClient(job);
+        RepositoryId repository = getRepositoryId(job);
+        CollaboratorService collaboratorService = new CollaboratorService(client);
+
+        try {
+            return collaboratorService.isCollaborator(repository, User);
+        } catch (final IOException e) {
+            LOG.debug("Received an exception while trying to check if user {} is a collaborator of repository: {}",
+                    User, repository, e);
+            return false;
+        }
+    }
+
     public static List<String> getCollaborators(@Nonnull final Job<?,?> job) {
         ExtendedGitHubClient client = getGitHubClient(job);
         RepositoryId repository = getRepositoryId(job);
