@@ -50,23 +50,6 @@ public class GitHubHelper {
         }
     }
 
-    public static List<String> getCollaborators(@Nonnull final Job<?,?> job) {
-        ExtendedGitHubClient client = getGitHubClient(job);
-        RepositoryId repository = getRepositoryId(job);
-        CollaboratorService collaboratorService = new CollaboratorService(client);
-
-        try {
-            return collaboratorService.getCollaborators(repository)
-                    .stream()
-                    .map(User::getLogin)
-                    .collect(Collectors.toList());
-        } catch (final IOException e) {
-            LOG.debug("Received an exception while trying to retrieve the collaborators for the repository: {}",
-                    repository, e);
-            return Collections.emptyList();
-        }
-    }
-
     public static ExtendedGitHubClient getGitHubClient(@Nonnull final Job<?,?> job) {
         SCMSource scmSource = SCMSource.SourceByItem.findSource(job);
         if (scmSource instanceof GitHubSCMSource) {
