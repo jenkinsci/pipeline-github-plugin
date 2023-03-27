@@ -36,20 +36,17 @@ public class GitHubHelper {
         // go away
     }
 
-    public static List<String> getCollaborators(@Nonnull final Job<?,?> job) {
+    public static Boolean isAuthorized(@Nonnull final Job<?,?> job, @Nonnull final String User) {
         ExtendedGitHubClient client = getGitHubClient(job);
         RepositoryId repository = getRepositoryId(job);
         CollaboratorService collaboratorService = new CollaboratorService(client);
 
         try {
-            return collaboratorService.getCollaborators(repository)
-                    .stream()
-                    .map(User::getLogin)
-                    .collect(Collectors.toList());
+            return collaboratorService.isCollaborator(repository, User);
         } catch (final IOException e) {
-            LOG.debug("Received an exception while trying to retrieve the collaborators for the repository: {}",
-                    repository, e);
-            return Collections.emptyList();
+            LOG.debug("Received an exception while trying to check if user {} is a collaborator of repository: {}",
+                    User, repository, e);
+            return false;
         }
     }
 
