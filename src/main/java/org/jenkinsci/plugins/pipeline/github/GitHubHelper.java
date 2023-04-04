@@ -61,7 +61,7 @@ public class GitHubHelper {
             // configure credentials
             if (gitHubSource.getCredentialsId() != null) {
                 StandardCredentials credentials = Connector.lookupScanCredentials(
-                        job, gitHubSource.getApiUri(), gitHubSource.getCredentialsId());
+                        job, gitHubSource.getApiUri(), gitHubSource.getCredentialsId(), gitHubSource.getRepoOwner());
 
                 if (credentials instanceof StandardUsernamePasswordCredentials) {
                     StandardUsernamePasswordCredentials c = (StandardUsernamePasswordCredentials) credentials;

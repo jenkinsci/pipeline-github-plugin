@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.57</version>
+        <version>4.57</version>
         <relativePath />
     </parent>
 
@@ -16,11 +16,7 @@
     <properties>
         <revision>2.8</revision>
         <changelist>999999-SNAPSHOT</changelist>
-        <jenkins.version>2.164.3</jenkins.version>
-        <java.level>8</java.level>
-        <jenkins-test-harness.version>2.39</jenkins-test-harness.version>
-        <hpi-plugin.version>3.5</hpi-plugin.version>
-        <stapler-plugin.version>1.17</stapler-plugin.version>
+        <jenkins.version>2.375.3</jenkins.version>
     </properties>
 
     <name>Pipeline: GitHub</name>
@@ -38,7 +34,7 @@
     <scm>
         <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>http://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
         <tag>${scmTag}</tag>
     </scm>
 
@@ -56,57 +52,30 @@
     </pluginRepositories>
 
     <dependencies>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>structs</artifactId>
-            <version>1.14</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>scm-api</artifactId>
-            <version>2.2.7</version>
-        </dependency>
-
-        <!-- For Steps -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-step-api</artifactId>
-            <version>2.15</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-            <version>2.53</version>
-        </dependency>
-
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>github-branch-source</artifactId>
-            <version>2.8.2</version>
+            <version>1703.vd5a_2b_29c6cdc</version>
         </dependency>
 
-        <!-- to resolve conflict in github-branch-source -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-            <scope>runtime</scope>
-        </dependency>
 
         <!-- to resolve conflict in github-branch-source -->
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
-            <version>2.1.16</version>
+            <version>1224.vc23ca_a_9a_2cb_0</version>
         </dependency>
 
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-job</artifactId>
-            <version>2.21</version>
+            <version>1289.vd1c337fd5354</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>jackson2-api</artifactId>
+            <version>2.13.3-285.vc03c0256d517</version>
         </dependency>
 
         <!-- GitHub Client Dependencies -->
@@ -117,32 +86,10 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.8.5</version>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-cps</artifactId>
+            <version>3653.v07ea_433c90b_4</version>
         </dependency>
-
-        <!-- Unit testing Dependencies -->
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>junit</artifactId>
-            <version>1.24</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>token-macro</artifactId>
-            <version>2.5</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-            <!--<artifactId>workflow-multibranch</artifactId>-->
-            <!--<version>2.14</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
 
     </dependencies>
 
