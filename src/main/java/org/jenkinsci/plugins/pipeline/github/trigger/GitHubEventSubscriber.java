@@ -77,6 +77,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                 break;
             case PULL_REQUEST:
                 handleLabelEvent(event);
+                break;
             case PULL_REQUEST_REVIEW:
                 handlePullRequestReview(event);
                 break;
