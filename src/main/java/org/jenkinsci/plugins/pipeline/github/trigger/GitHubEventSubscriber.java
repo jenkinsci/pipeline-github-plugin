@@ -125,6 +125,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         // create values for the action if a new job is triggered afterward
         ArrayList<ParameterValue> values = new ArrayList<ParameterValue>();
         String labelName = prEvent.getLabel().getName();
+        LOG.info("Added label {} to repo {}", labelName, key);
         values.add(new StringParameterValue("GITHUB_LABEL_ADDED", String.valueOf(labelName)));
         // lookup jobs
         for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
@@ -137,6 +138,9 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                     .filter(labelTrigger -> labelAddedMatches(labelTrigger, labelName, job))
                     .collect(Collectors.toList());
 
+            if (matchingTriggers.size() == 0) {
+                break;
+            }
             job.scheduleBuild2(
                 Jenkins.getInstance().getQuietPeriod(),
                 new CauseAction(
@@ -149,7 +153,16 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
             );
         }
     }
-    private boolean labelAddedMatches (final LabelAddedTrigger trigger,final String labelName,final WorkflowJob job ){
+    private boolean labelAddedMatches(final LabelAddedTrigger trigger,final String labelName,final WorkflowJob job ){
+        boolean matches = trigger.getLabelTrigger().equalsIgnoreCase(labelName);
+        if (matches) {
+            LOG.debug("Job: {}, labelName: {}, the label did matched the triggerLabel: {}",
+                job.getFullName(), labelName, trigger.getLabelTrigger());
+            return true;
+        } 
+        LOG.debug("Job: {}, labelName: {}, the label did not matched the triggerLabel: {}",
+                job.getFullName(), labelName, trigger.getLabelTrigger());
+        
         return false;
     }
     private void handleIssueComment(final GHSubscriberEvent event) {

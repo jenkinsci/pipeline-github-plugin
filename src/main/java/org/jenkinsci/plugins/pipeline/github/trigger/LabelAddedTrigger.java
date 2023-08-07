@@ -74,11 +74,7 @@ public class LabelAddedTrigger extends Trigger<WorkflowJob> {
         return labelTrigger;
     }
 
-    boolean labelMatches(final String labelAdded) {
-        return labelTrigger.equalsIgnoreCase(labelAdded);
-    }
-
-    @Symbol("LabelAddedTrigger")
+    @Symbol("labelAddedTrigger")
     @Extension
     public static class DescriptorImpl extends TriggerDescriptor {
         private transient static final Map<String, Set<WorkflowJob>> jobs = new ConcurrentHashMap<>();
