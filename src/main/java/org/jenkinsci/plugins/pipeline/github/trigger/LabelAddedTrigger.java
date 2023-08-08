@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * An LabelAddedTrigger, to be used from pipeline scripts only.
@@ -33,11 +34,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class LabelAddedTrigger extends Trigger<WorkflowJob> {
     private static final Logger LOG = LoggerFactory.getLogger(LabelAddedTrigger.class);
 
-    private final String labelTrigger;
+    private final String labelTriggerPattern;
 
     @DataBoundConstructor
-    public LabelAddedTrigger(@Nonnull final String labelTrigger) {
-        this.labelTrigger = labelTrigger;
+    public LabelAddedTrigger(@Nonnull final String labelTriggerPattern) {
+        this.labelTriggerPattern = labelTriggerPattern;
     }
 
     @Override
@@ -71,7 +72,12 @@ public class LabelAddedTrigger extends Trigger<WorkflowJob> {
     }
 
     public String getLabelTrigger() {
-        return labelTrigger;
+        return labelTriggerPattern;
+    }
+    boolean matchesLabel(final String label) {
+        return Pattern.compile(labelTriggerPattern)
+                .matcher(label)
+                .matches();
     }
 
     @Symbol("labelAddedTrigger")

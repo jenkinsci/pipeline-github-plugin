@@ -139,6 +139,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                     .collect(Collectors.toList());
 
             if (matchingTriggers.size() == 0) {
+                LOG.debug("No labels match the ones attached to the trigger");
                 break;
             }
             job.scheduleBuild2(
@@ -154,7 +155,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         }
     }
     private boolean labelAddedMatches(final LabelAddedTrigger trigger,final String labelName,final WorkflowJob job ){
-        boolean matches = trigger.getLabelTrigger().equalsIgnoreCase(labelName);
+        boolean matches = trigger.matchesLabel(labelName);
         if (matches) {
             LOG.debug("Job: {}, labelName: {}, the label did matched the triggerLabel: {}",
                 job.getFullName(), labelName, trigger.getLabelTrigger());
@@ -264,10 +265,10 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
             LOG.debug("Job: {}, IssueComment: {} matched Pattern: {}",
                     job.getFullName(), issueComment, trigger.getCommentPattern());
             return true;
-        } else {
-            LOG.debug("Job: {}, IssueComment: {}, the comment did not match Pattern: {}",
-                    job.getFullName(), issueComment, trigger.getCommentPattern());
         }
+        LOG.debug("Job: {}, IssueComment: {}, the comment did not match Pattern: {}",
+                job.getFullName(), issueComment, trigger.getCommentPattern());
+    
         return false;
     }
 
@@ -381,6 +382,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
 //        events.add(GHEvent.PULL_REQUEST_REVIEW_COMMENT);
 //        events.add(GHEvent.COMMIT_COMMENT);
         events.add(GHEvent.ISSUE_COMMENT);
+        events.add(GHEvent.PULL_REQUEST);
         events.add(GHEvent.PULL_REQUEST_REVIEW);
         return Collections.unmodifiableSet(events);
     }
