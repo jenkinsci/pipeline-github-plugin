@@ -75,6 +75,9 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
             case ISSUE_COMMENT:
                 handleIssueComment(event);
                 break;
+            case PULL_REQUEST:
+                handleLabelEvent(event);
+                break;
             case PULL_REQUEST_REVIEW:
                 handlePullRequestReview(event);
                 break;
@@ -83,6 +86,86 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         }
     }
 
+    private void handleLabelEvent(final GHSubscriberEvent event) {
+        switch (event.getType()){
+            case CREATED:
+            case UPDATED:
+                break;
+            default:
+                return;
+        }
+        final GHEventPayload.PullRequest prEvent;
+        try {
+            prEvent = GitHub.offline()
+                    .parseEventPayload(new StringReader(event.getPayload()), GHEventPayload.PullRequest.class);
+        } catch (final IOException e) {
+            LOG.error("Unable to parse the payload of GHSubscriberEvent: {}", event, e);
+            return;
+        }
+        switch (prEvent.getAction()) {
+            case "labeled":
+                break;
+            default:
+                LOG.debug("Ignoring PR: {} event with Action: {}",
+                        prEvent.getNumber(), prEvent.getAction());
+                return;
+        }
+        // create key for this comment's PR
+        final String key = String.format("%s/%s/%d",
+                prEvent.getRepository().getOwnerName(),
+                prEvent.getRepository().getName(),
+                prEvent.getNumber());
+                // lookup trigger
+        final LabelAddedTrigger.DescriptorImpl triggerDescriptor = (LabelAddedTrigger.DescriptorImpl) Jenkins.get()
+                .getDescriptor(LabelAddedTrigger.class);
+        if (triggerDescriptor == null) {
+            LOG.error("Unable to find the LabelAddedTrigger Trigger, this shouldn't happen.");
+            return;
+        }
+        // create values for the action if a new job is triggered afterward
+        ArrayList<ParameterValue> values = new ArrayList<ParameterValue>();
+        String labelName = prEvent.getLabel().getName();
+        LOG.info("Added label {} to repo {}", labelName, key);
+        values.add(new StringParameterValue("GITHUB_LABEL_ADDED", String.valueOf(labelName)));
+        // lookup jobs
+        for (final WorkflowJob job : triggerDescriptor.getJobs(key)) {
+            // find triggers
+            final List<LabelAddedTrigger> matchingTriggers = job.getTriggersJobProperty()
+                    .getTriggers()
+                    .stream()
+                    .filter(LabelAddedTrigger.class::isInstance)
+                    .map(LabelAddedTrigger.class::cast)
+                    .filter(labelTrigger -> labelAddedMatches(labelTrigger, labelName, job))
+                    .collect(Collectors.toList());
+
+            if (matchingTriggers.size() == 0) {
+                LOG.debug("No labels match the ones attached to the trigger");
+                break;
+            }
+            job.scheduleBuild2(
+                Jenkins.getInstance().getQuietPeriod(),
+                new CauseAction(
+                    new LabelAddedCause(
+                        prEvent.getSender().getLogin(),
+                        labelName
+                    )
+                ),
+                new GitHubEnvironmentVariablesAction(values)
+            );
+        }
+    }
+    private boolean labelAddedMatches(final LabelAddedTrigger trigger,final String labelName,final WorkflowJob job ){
+        boolean matches = trigger.matchesLabel(labelName);
+        if (matches) {
+            LOG.debug("Job: {}, labelName: {}, the label did matched the triggerLabel: {}",
+                job.getFullName(), labelName, trigger.getLabelTrigger());
+            return true;
+        } 
+        LOG.debug("Job: {}, labelName: {}, the label did not matched the triggerLabel: {}",
+                job.getFullName(), labelName, trigger.getLabelTrigger());
+        
+        return false;
+    }
     private void handleIssueComment(final GHSubscriberEvent event) {
         // we only care about created or updated events
         switch (event.getType()) {
@@ -141,7 +224,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                     .stream()
                     .filter(IssueCommentTrigger.class::isInstance)
                     .map(IssueCommentTrigger.class::cast)
-                    .filter(t -> triggerMatches(t, issueCommentEvent.getComment(), job))
+                    .filter(t -> commentTriggerMatches(t, issueCommentEvent.getComment(), job))
                     .collect(Collectors.toList());
 
             // check if they have authorization
@@ -175,17 +258,17 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
         return GitHubHelper.isAuthorized(job, commentAuthor);
     }
 
-    private boolean triggerMatches(final IssueCommentTrigger trigger,
+    private boolean commentTriggerMatches(final IssueCommentTrigger trigger,
                                    final GHIssueComment issueComment,
                                    final WorkflowJob job) {
         if (trigger.matchesComment(issueComment.getBody())) {
             LOG.debug("Job: {}, IssueComment: {} matched Pattern: {}",
                     job.getFullName(), issueComment, trigger.getCommentPattern());
             return true;
-        } else {
-            LOG.debug("Job: {}, IssueComment: {}, the comment did not match Pattern: {}",
-                    job.getFullName(), issueComment, trigger.getCommentPattern());
         }
+        LOG.debug("Job: {}, IssueComment: {}, the comment did not match Pattern: {}",
+                job.getFullName(), issueComment, trigger.getCommentPattern());
+    
         return false;
     }
 
@@ -248,7 +331,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
                     .stream()
                     .filter(PullRequestReviewTrigger.class::isInstance)
                     .map(PullRequestReviewTrigger.class::cast)
-                    .filter(t -> triggerMatches(t, pullRequestReview.getReview(), job))
+                    .filter(t -> commentTriggerMatches(t, pullRequestReview.getReview(), job))
                     .collect(Collectors.toList());
 
             // check if they have authorization
@@ -279,7 +362,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
     }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
-    private boolean triggerMatches(final PullRequestReviewTrigger trigger,
+    private boolean commentTriggerMatches(final PullRequestReviewTrigger trigger,
                                    final GHPullRequestReview review,
                                    final WorkflowJob job) {
         if (trigger.matches(review.getState().name().toLowerCase())) {
@@ -299,6 +382,7 @@ public class GitHubEventSubscriber extends GHEventsSubscriber {
 //        events.add(GHEvent.PULL_REQUEST_REVIEW_COMMENT);
 //        events.add(GHEvent.COMMIT_COMMENT);
         events.add(GHEvent.ISSUE_COMMENT);
+        events.add(GHEvent.PULL_REQUEST);
         events.add(GHEvent.PULL_REQUEST_REVIEW);
         return Collections.unmodifiableSet(events);
     }
