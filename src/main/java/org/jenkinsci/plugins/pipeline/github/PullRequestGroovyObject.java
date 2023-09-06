@@ -263,6 +263,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
+    public String getMergeableState() {
+        return pullRequest.getMergeableState();
+    }
+
+    @Whitelisted
     public boolean isMaintainerCanModify() {
         return pullRequest.isMaintainerCanModify();
     }

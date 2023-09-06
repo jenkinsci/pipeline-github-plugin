@@ -272,6 +272,7 @@ changedFiles | `Integer` | false
 merged | `Boolean` | false
 mergeable | `Boolean` | false
 mergeCommitSha | `String` | false
+mergeableState | `String` | false
 maintainerCanModify | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
 draft | `Boolean` | false
 
