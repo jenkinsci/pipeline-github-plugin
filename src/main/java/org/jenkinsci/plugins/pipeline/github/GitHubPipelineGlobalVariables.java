@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Run;
 import jenkins.scm.api.SCMHead;
@@ -7,7 +8,6 @@ import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariableSet;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -20,7 +20,7 @@ import java.util.LinkedList;
  */
 @Extension
 public class GitHubPipelineGlobalVariables extends GlobalVariableSet {
-    @Nonnull
+    @NonNull
     @Override
     public Collection<GlobalVariable> forRun(final Run<?, ?> run) {
         if (run == null) {

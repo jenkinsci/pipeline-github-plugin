@@ -1,10 +1,9 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
-
-import javax.annotation.Nonnull;
 
 /**
  * Factory for our {@link PullRequestGroovyObject} instance.
@@ -14,15 +13,15 @@ import javax.annotation.Nonnull;
  */
 public class PullRequestGlobalVariable extends GlobalVariable {
 
-    @Nonnull
+    @NonNull
     @Override
     public String getName() {
         return "pullRequest";
     }
 
-    @Nonnull
+    @NonNull
     @Override
-    public Object getValue(@Nonnull final CpsScript script) throws Exception {
+    public Object getValue(@NonNull final CpsScript script) throws Exception {
         final Run<?, ?> build = script.$build();
         if (build == null) {
             throw new IllegalStateException("No associated build");

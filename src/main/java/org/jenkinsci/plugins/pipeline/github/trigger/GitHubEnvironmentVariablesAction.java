@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.EnvironmentContributor;
@@ -10,7 +11,6 @@ import hudson.model.TaskListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,9 +52,9 @@ public class GitHubEnvironmentVariablesAction extends ParametersAction {
 
         @Override
         @SuppressWarnings("rawtypes")
-        public void buildEnvironmentFor(@Nonnull Run run,
-                                        @Nonnull EnvVars envs,
-                                        @Nonnull TaskListener listener) throws IOException, InterruptedException {
+        public void buildEnvironmentFor(@NonNull Run run,
+                                        @NonNull EnvVars envs,
+                                        @NonNull TaskListener listener) throws IOException, InterruptedException {
 
             GitHubEnvironmentVariablesAction action = run.getAction(GitHubEnvironmentVariablesAction.class);
             if (action != null) {

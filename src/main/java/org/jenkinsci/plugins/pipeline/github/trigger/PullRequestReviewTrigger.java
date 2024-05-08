@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Item;
@@ -16,8 +17,6 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+
 /**
  * An PullRequestApprovalTrigger, to be used from pipeline scripts only.
  *
@@ -47,7 +47,7 @@ public class PullRequestReviewTrigger  extends Trigger<WorkflowJob> {
   }
 
   @DataBoundSetter
-  public void setReviewStates(@Nonnull final String [] reviewStates) {
+  public void setReviewStates(@NonNull final String [] reviewStates) {
       this.reviewStates = Arrays.copyOf(reviewStates, reviewStates.length);
   }
 

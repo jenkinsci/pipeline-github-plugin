@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import hudson.model.Job;
@@ -25,7 +26,6 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.persistence.PersistIn;
 import org.jenkinsci.plugins.workflow.cps.persistence.PersistenceContext;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -69,7 +69,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     private transient ExtendedCommitService commitService;
     private transient ExtendedMilestoneService milestoneService;
 
-    PullRequestGroovyObject(@Nonnull final Job job) throws Exception {
+    PullRequestGroovyObject(@NonNull final Job job) throws Exception {
         this.job = job;
 
         this.jobId = job.getFullName();
