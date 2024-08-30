@@ -247,6 +247,7 @@ locked | `Boolean` | **true** | Accepts `true`, `false` or `'true'`, `'false'`
 milestone | `Milestone` | **true** | Setter accepts int or Milestone class.
 head | `String` | false | Revision (SHA) of the head commit of this pull request
 headRef | `String` | false | Name of the branch this pull request is created for
+baseSha | `String` | false | Revision (SHA) of the head commit of the base branch in the current repository this pull request targets
 base | `String` | **true** | Name of the base branch in the current repository this pull request targets
 files | `Iterable<CommitFile>` | false
 assignees | `Iterable<String>` | **true** | Accepts a `List<String>`
