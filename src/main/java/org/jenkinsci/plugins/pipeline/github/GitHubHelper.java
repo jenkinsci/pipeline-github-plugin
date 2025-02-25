@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.pipeline.github;
 
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernamePasswordCredentials;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Job;
 import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMHead;
@@ -16,7 +17,6 @@ import org.jenkinsci.plugins.pipeline.github.client.ExtendedGitHubClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -36,7 +36,7 @@ public class GitHubHelper {
         // go away
     }
 
-    public static Boolean isAuthorized(@Nonnull final Job<?,?> job, @Nonnull final String User) {
+    public static Boolean isAuthorized(@NonNull final Job<?,?> job, @NonNull final String User) {
         ExtendedGitHubClient client = getGitHubClient(job);
         RepositoryId repository = getRepositoryId(job);
         CollaboratorService collaboratorService = new CollaboratorService(client);
@@ -50,7 +50,7 @@ public class GitHubHelper {
         }
     }
 
-    public static ExtendedGitHubClient getGitHubClient(@Nonnull final Job<?,?> job) {
+    public static ExtendedGitHubClient getGitHubClient(@NonNull final Job<?,?> job) {
         SCMSource scmSource = SCMSource.SourceByItem.findSource(job);
         if (scmSource instanceof GitHubSCMSource) {
             GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
@@ -75,7 +75,7 @@ public class GitHubHelper {
         throw new IllegalArgumentException("Job's SCM is not GitHub.");
     }
 
-    public static RepositoryId getRepositoryId(@Nonnull final Job<?,?> job) {
+    public static RepositoryId getRepositoryId(@NonNull final Job<?,?> job) {
         SCMSource src = SCMSource.SourceByItem.findSource(job);
         if (src instanceof GitHubSCMSource) {
             GitHubSCMSource source = (GitHubSCMSource) src;
@@ -86,7 +86,7 @@ public class GitHubHelper {
         return null;
     }
 
-    public static PullRequestSCMHead getPullRequest(@Nonnull final Job job) throws Exception {
+    public static PullRequestSCMHead getPullRequest(@NonNull final Job job) throws Exception {
         PullRequestSCMHead head = (PullRequestSCMHead) SCMHead.HeadByItem.findHead(job);
         if (head == null) {
             throw new IllegalStateException("Build is not a Pull Request");

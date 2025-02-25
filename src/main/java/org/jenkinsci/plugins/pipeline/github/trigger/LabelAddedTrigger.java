@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Item;
@@ -15,7 +16,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class LabelAddedTrigger extends Trigger<WorkflowJob> {
     private final String labelTriggerPattern;
 
     @DataBoundConstructor
-    public LabelAddedTrigger(@Nonnull final String labelTriggerPattern) {
+    public LabelAddedTrigger(@NonNull final String labelTriggerPattern) {
         this.labelTriggerPattern = labelTriggerPattern;
     }
 
