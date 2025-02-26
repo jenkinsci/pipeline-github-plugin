@@ -44,7 +44,7 @@ However you can override this in a pipeline script by calling `setCredentials(St
 pullRequest.setCredentials('John.Smith', 'qwerty4321')
 ```
 
-If you plan to use this plugin to add/modify/remove comments, labels, commit statuses etc. Please ensure that the required permissions are assigned to the token supplied in the credentials (`Scan Credentials` or `Manually` supplied).
+If you plan to use this plugin to add/modify/remove comments, labels, commit statuses, etc., please ensure that the required permissions are assigned to the token supplied in the credentials (`Scan Credentials` or `Manually` supplied).
 
 # Triggers
 
@@ -62,16 +62,18 @@ This plugin adds the following pipeline triggers
 
 ### Limitations
 
-The Pull Request's job/build must have run at least once for the trigger to be registered. If an initial run never takes place then the trigger won't be registered and cannot pickup on any comments made.
+The Pull Request's job/build must have run at least once for the trigger to be registered. If an initial run never takes place then the trigger won't be registered and can't pick up on any comments made.
 
-This should not be an issue in practice, because a requirement of using this plugin is that your jobs are setup automatically by the GitHub Branch Source Plugin, which will trigger an initial build when it is notified of a new Pull Request.
+This should not be an issue in practice, because a requirement of using this plugin is that your jobs are set up automatically by the GitHub Branch Source Plugin, which will trigger an initial build when it is notified of a new Pull Request (unless specifically configured not to trigger that initial build). Note also that if the relevant Jenkinsfile is invalid (e.g. has merge conflicts), the trigger won't be registered, and comments will do nothing. 
+
+In projects where these limitations present an issue, one may want to take a look at [GitHub PR Comment Build plugin](https://plugins.jenkins.io/github-pr-comment-build/).
 
 ### Considerations
 
 This trigger would be of limited usefulness for people wishing to build public GitHub/Jenkins bots, using pipeline scripts. As there is no way to ensure that a Pull Request's `Jenkinsfile` contains any triggers. Not to mention you would not want to trust just any `Jenkinsfile` from a random Pull Request/non-collaborator.
 
-This trigger is intended to be used inside enterprise organizations:
-1. Where all branches and forks just contain a token `Jenkinsfile` that delegates to the real pipeline script, using [shared libraries](https://jenkins.io/doc/book/pipeline/shared-libraries/).
+This trigger is intended to be used inside enterprise organizations where:
+1. All branches and forks just contain a token `Jenkinsfile` that delegates to the real pipeline script, using [shared libraries](https://jenkins.io/doc/book/pipeline/shared-libraries/).
 2. Trust all their Pull Request authors.
 
 ### Parameters
@@ -94,6 +96,20 @@ properties([
 pipeline {
     triggers {
         issueCommentTrigger('.*test this please.*')
+    }
+}
+```
+
+Note that it's possible to run some code before declarative pipeline starts:
+
+```groovy
+// may return different regexes for different branches, etc.
+String comment_regex = isSpecialSnowflakeBranch() ? getSpecialSnowflakeRegex() : '.*test this please.*'
+// for some code (e.g. when `sh` is needed) one may need to allocate a node.
+
+pipeline {
+    triggers {
+        issueCommentTrigger(comment_regex)
     }
 }
 ```
