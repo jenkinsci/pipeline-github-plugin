@@ -282,7 +282,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     }
 
     @Whitelisted
-    public boolean isMergeable() {
+    public Boolean isMergeable() { // Boolean instead of boolean because this can be null!
         return pullRequest.isMergeable();
     }
 
