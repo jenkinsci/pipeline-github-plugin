@@ -78,6 +78,17 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         this.pullRequest = getPullRequestService().getPullRequest(base, pullRequestNumber);
     }
 
+    PullRequestGroovyObject(@NonNull final Job job, final ExtendedPullRequest pr) throws Exception {
+        this.job = job;
+
+        this.jobId = job.getFullName();
+
+        this.pullRequestNumber = pr.getNumber();
+        this.base = GitHubHelper.getRepositoryId(job);
+
+        this.pullRequest = pr;
+    }
+
     private Job getJob() {
         if (job == null) {
             job = Jenkins.get().getItemByFullName(jobId, Job.class);

@@ -80,6 +80,31 @@ public class ExtendedPullRequestService extends PullRequestService {
         return (ExtendedPullRequest) getClient().getUnchecked(request).getBody();
     }
 
+    public ExtendedPullRequest getMergedPullRequest(final IRepositoryIdProvider repository, final String mergeCommitSha, final String targetBranch) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/pulls");
+        uri.append("?state=").append("closed");
+        uri.append("&sort=").append("updated");
+        uri.append("&direction=").append("desc");
+        uri.append("&per_page=").append("5"); // only need to check the most recently closed PRs
+        GitHubRequest request = this.createRequest();
+        request.setUri(uri);
+        request.setType((new TypeToken<List<ExtendedPullRequest>>(){}).getType());
+        @SuppressWarnings("unchecked")
+        List<ExtendedPullRequest> pullRequests = (List<ExtendedPullRequest>) getClient().getUnchecked(request).getBody();
+        if (pullRequests != null) {
+            for (ExtendedPullRequest pr : pullRequests) {
+                if (pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)
+                        && (null == targetBranch || pr.getBase().getRef().equals(targetBranch))) {
+                    return pr;
+                }
+            }
+        }
+        return null;
+    }
+
     public ExtendedMergeStatus merge(final IRepositoryIdProvider repository,
                                      final int id,
                                      final String commitTitle,
