@@ -54,9 +54,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     private static final long serialVersionUID = 1L;
 
     private final String jobId;
-    private final int pullRequestNumber;
-    private final RepositoryId base;
-
+    private int pullRequestNumber;
+    private RepositoryId base;
     private ExtendedPullRequest pullRequest;
 
     private transient Job job;
@@ -83,10 +82,11 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
         this.jobId = job.getFullName();
 
-        this.pullRequestNumber = pr.getNumber();
-        this.base = GitHubHelper.getRepositoryId(job);
-
-        this.pullRequest = pr;
+        if (null != pr) {
+            this.pullRequestNumber = pr.getNumber();
+            this.base = GitHubHelper.getRepositoryId(job);
+            this.pullRequest = pr;
+        }
     }
 
     private Job getJob() {

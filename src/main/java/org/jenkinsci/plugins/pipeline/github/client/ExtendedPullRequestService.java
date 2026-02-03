@@ -88,7 +88,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         uri.append("?state=").append("closed");
         uri.append("&sort=").append("updated");
         uri.append("&direction=").append("desc");
-        uri.append("&per_page=").append("5"); // only need to check the most recently closed PRs
+        uri.append("&per_page=").append("10"); // only need to check the most recently closed PRs
         GitHubRequest request = this.createRequest();
         request.setUri(uri);
         request.setType((new TypeToken<List<ExtendedPullRequest>>(){}).getType());
