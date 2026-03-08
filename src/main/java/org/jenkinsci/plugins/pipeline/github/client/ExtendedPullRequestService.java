@@ -8,6 +8,8 @@ import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.Objects;
  * @author Aaron Whiteside
  */
 public class ExtendedPullRequestService extends PullRequestService {
+    private static final Logger LOG = LoggerFactory.getLogger(ExtendedPullRequestService.class);
 
     public ExtendedPullRequestService(final ExtendedGitHubClient client) {
         super(client);
@@ -80,7 +83,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         return (ExtendedPullRequest) getClient().getUnchecked(request).getBody();
     }
 
-    public ExtendedPullRequest getMergedPullRequest(final IRepositoryIdProvider repository, final String mergeCommitSha, final String targetBranch) {
+    public ExtendedPullRequest getMergedPullRequest(final IRepositoryIdProvider repository, final String mergeCommitSha) {
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
@@ -95,9 +98,10 @@ public class ExtendedPullRequestService extends PullRequestService {
         @SuppressWarnings("unchecked")
         List<ExtendedPullRequest> pullRequests = (List<ExtendedPullRequest>) getClient().getUnchecked(request).getBody();
         if (pullRequests != null) {
+            LOG.debug("Checking {} pull requests for merge commit SHA: {}", pullRequests.size(), mergeCommitSha);
             for (ExtendedPullRequest pr : pullRequests) {
-                if (pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)
-                        && (null == targetBranch || pr.getBase().getRef().equals(targetBranch))) {
+                LOG.debug("PR #{} - merge commit SHA: {}", pr.getNumber(), pr.getMergeCommitSha());
+                if (pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)) {
                     return pr;
                 }
             }

@@ -3,14 +3,12 @@ package org.jenkinsci.plugins.pipeline.github;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 import jenkins.plugins.git.AbstractGitSCMSource;
-import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
 import org.eclipse.egit.github.core.RepositoryId;
-import org.jenkinsci.plugins.github_branch_source.BranchSCMHead;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequest;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedPullRequestService;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
@@ -39,13 +37,22 @@ public class MergedPullRequestGlobalVariable extends GlobalVariable {
 
     private ExtendedPullRequest getMergedPullRequest(final Run<?, ?> run) {
         SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
+        LOG.debug("Checking for merged pull request for run: {}", run.getFullDisplayName());
         if (null != scmSource && scmSource instanceof GitHubSCMSource) {
             GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
+            LOG.debug("Found GitHubSCMSource for run: {}", run.getFullDisplayName());
             SCMRevision revision = SCMRevisionAction.getRevision(scmSource, run);
-            if (null != revision && revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-                AbstractGitSCMSource.SCMRevisionImpl gitRevision = (AbstractGitSCMSource.SCMRevisionImpl) revision;
-                LOG.debug("revision hash for run {}: {}", run.getFullDisplayName(), gitRevision.getHash());
-                return getPullRequest(run, gitHubSource, gitRevision.getHash());
+            if (null != revision) {
+                LOG.debug("Found SCMRevision for run {}: {} - {}", run.getFullDisplayName(), revision, revision.getClass().getName());
+                if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+                    AbstractGitSCMSource.SCMRevisionImpl gitRevision = (AbstractGitSCMSource.SCMRevisionImpl) revision;
+                    LOG.debug("Git revision hash for run {}: {}", run.getFullDisplayName(), gitRevision.getHash());
+                    return getPullRequest(run, gitHubSource, gitRevision.getHash());
+                } else if (revision instanceof PullRequestSCMRevision) {
+                    PullRequestSCMRevision prRevision = (PullRequestSCMRevision) revision;
+                    LOG.debug("PR revision for run {}: {}", run.getFullDisplayName(), prRevision.getPullHash());
+                    return getPullRequest(run, gitHubSource, prRevision.getPullHash());
+                }
             }
         }
         return null;
@@ -55,17 +62,7 @@ public class MergedPullRequestGlobalVariable extends GlobalVariable {
         try {
             RepositoryId repoId = GitHubHelper.getRepositoryId(run.getParent());
             ExtendedPullRequestService prService = new ExtendedPullRequestService(GitHubHelper.getGitHubClient(run.getParent()));
-
-            // Get the target branch name, if available
-            String targetBranch = null;
-            SCMHead scmHead = SCMHead.HeadByItem.findHead(run.getParent());
-            if (scmHead instanceof BranchSCMHead) {
-                targetBranch = ((BranchSCMHead) scmHead).getName();
-            } else if (scmHead instanceof PullRequestSCMHead) {
-                targetBranch = ((PullRequestSCMHead) scmHead).getTarget().getName();
-            }
-
-            return prService.getMergedPullRequest(repoId, commitHash, targetBranch);
+            return prService.getMergedPullRequest(repoId, commitHash);
         } catch (Exception e) {
             LOG.warn("Failed to query GitHub API for pull requests with merge commit {}; job = {}", commitHash, run.getFullDisplayName(), e);
         }
