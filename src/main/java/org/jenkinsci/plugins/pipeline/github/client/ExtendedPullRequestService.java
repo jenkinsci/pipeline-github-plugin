@@ -87,11 +87,7 @@ public class ExtendedPullRequestService extends PullRequestService {
         String repoId = this.getId(repository);
         StringBuilder uri = new StringBuilder("/repos");
         uri.append('/').append(repoId);
-        uri.append("/pulls");
-        uri.append("?state=").append("closed");
-        uri.append("&sort=").append("updated");
-        uri.append("&direction=").append("desc");
-        uri.append("&per_page=").append("10"); // only need to check the most recently closed PRs
+        uri.append("/commits/").append(mergeCommitSha).append("/pulls");
         GitHubRequest request = this.createRequest();
         request.setUri(uri);
         request.setType((new TypeToken<List<ExtendedPullRequest>>(){}).getType());
@@ -100,8 +96,8 @@ public class ExtendedPullRequestService extends PullRequestService {
         if (pullRequests != null) {
             LOG.debug("Checking {} pull requests for merge commit SHA: {}", pullRequests.size(), mergeCommitSha);
             for (ExtendedPullRequest pr : pullRequests) {
-                LOG.debug("PR #{} - merge commit SHA: {}", pr.getNumber(), pr.getMergeCommitSha());
-                if (pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)) {
+                LOG.debug("Pull request #{}: merged = {}, mergedAt = {}, mergeCommitSha = {}", pr.getNumber(), pr.isMerged(), pr.getMergedAt(), pr.getMergeCommitSha());
+                if ((pr.isMerged() || pr.getMergedAt() != null) && pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)) {
                     return pr;
                 }
             }
