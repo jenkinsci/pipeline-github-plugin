@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github.trigger;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.triggers.Trigger;
@@ -46,29 +45,42 @@ public class LabelAddedTrigger extends Trigger<WorkflowJob> {
         super.start(project, newInstance);
         // we only care about pull requests
         if (SCMHead.HeadByItem.findHead(project) instanceof PullRequestSCMHead) {
-            DescriptorImpl.jobs
-                    .computeIfAbsent(getKey(project), key -> new HashSet<>())
-                    .add(project);
+            final String key = getKey(project);
+            if (key != null) {
+                DescriptorImpl.jobs
+                        .computeIfAbsent(key, k -> new HashSet<>())
+                        .add(project);
+            }
         }
     }
 
     @Override
     public void stop() {
         if (SCMHead.HeadByItem.findHead(job) instanceof PullRequestSCMHead) {
-            DescriptorImpl.jobs.getOrDefault(getKey(job), Collections.emptySet())
-                    .remove(job);
+            final String key = getKey(job);
+            if (key != null) {
+                DescriptorImpl.jobs.getOrDefault(key, Collections.emptySet())
+                        .remove(job);
+            }
         }
     }
 
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private String getKey(final WorkflowJob project) {
-        final GitHubSCMSource scmSource = (GitHubSCMSource) SCMSource.SourceByItem.findSource(project);
-        final PullRequestSCMHead scmHead = (PullRequestSCMHead) SCMHead.HeadByItem.findHead(project);
+        final SCMSource scmSource = SCMSource.SourceByItem.findSource(project);
+        if (!(scmSource instanceof GitHubSCMSource)) {
+            LOG.warn("Job: {} has a non-GitHub SCM source: {}, skipping trigger registration",
+                    project.getFullName(), scmSource != null ? scmSource.getClass().getName() : "null");
+            return null;
+        }
+        final SCMHead scmHead = SCMHead.HeadByItem.findHead(project);
+        if (!(scmHead instanceof PullRequestSCMHead)) {
+            return null;
+        }
 
         return String.format("%s/%s/%d",
-                scmSource.getRepoOwner(),
-                scmSource.getRepository(),
-                scmHead.getNumber()).toLowerCase();
+                ((GitHubSCMSource) scmSource).getRepoOwner(),
+                ((GitHubSCMSource) scmSource).getRepository(),
+                ((PullRequestSCMHead) scmHead).getNumber()).toLowerCase();
     }
 
     public String getLabelTrigger() {
