@@ -8,6 +8,8 @@ import org.eclipse.egit.github.core.client.GitHubRequest;
 import org.eclipse.egit.github.core.client.PageIterator;
 import org.eclipse.egit.github.core.client.PagedRequest;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.Objects;
  * @author Aaron Whiteside
  */
 public class ExtendedPullRequestService extends PullRequestService {
+    private static final Logger LOG = LoggerFactory.getLogger(ExtendedPullRequestService.class);
 
     public ExtendedPullRequestService(final ExtendedGitHubClient client) {
         super(client);
@@ -78,6 +81,28 @@ public class ExtendedPullRequestService extends PullRequestService {
         request.setUri(uri);
         request.setType(ExtendedPullRequest.class);
         return (ExtendedPullRequest) getClient().getUnchecked(request).getBody();
+    }
+
+    public ExtendedPullRequest getMergedPullRequest(final IRepositoryIdProvider repository, final String mergeCommitSha) {
+        String repoId = this.getId(repository);
+        StringBuilder uri = new StringBuilder("/repos");
+        uri.append('/').append(repoId);
+        uri.append("/commits/").append(mergeCommitSha).append("/pulls");
+        GitHubRequest request = this.createRequest();
+        request.setUri(uri);
+        request.setType((new TypeToken<List<ExtendedPullRequest>>(){}).getType());
+        @SuppressWarnings("unchecked")
+        List<ExtendedPullRequest> pullRequests = (List<ExtendedPullRequest>) getClient().getUnchecked(request).getBody();
+        if (pullRequests != null) {
+            LOG.debug("Checking {} pull requests for merge commit SHA: {}", pullRequests.size(), mergeCommitSha);
+            for (ExtendedPullRequest pr : pullRequests) {
+                LOG.debug("Pull request #{}: merged = {}, mergedAt = {}, mergeCommitSha = {}", pr.getNumber(), pr.isMerged(), pr.getMergedAt(), pr.getMergeCommitSha());
+                if ((pr.isMerged() || pr.getMergedAt() != null) && pr.getMergeCommitSha() != null && pr.getMergeCommitSha().equals(mergeCommitSha)) {
+                    return pr;
+                }
+            }
+        }
+        return null;
     }
 
     public ExtendedMergeStatus merge(final IRepositoryIdProvider repository,

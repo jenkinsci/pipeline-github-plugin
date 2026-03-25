@@ -9,6 +9,7 @@ Table of Contents
     * [pullRequestReview](#pullrequestreview)
   * [Global Variables](#global-variables)
     * [pullRequest](#pullrequest)
+    * [mergedPullRequest](#mergedpullrequest)
   * [Auxiliary Classes](#auxiliary-classes)
     * [CommitStatus](#commitstatus)
     * [Commit](#commit)
@@ -357,6 +358,59 @@ Returns the merge's SHA/commit id.
 
 #### Misc
 > void setCredentials(String userName, String password)
+
+## `mergedPullRequest`
+
+### Usage
+
+The `mergedPullRequest` is useful for scenarios like following:
+1. Pull request 123 is merged to `master` branch.
+1. Build runs on `master` and wants to be able to access detail for PR 123.
+
+The `mergedPullRequest` global variable is available for a build if the following is true:
+1. The `Detect Merged Pull Request` trait is added to build's behaviors. This instructs the build to search for a potential merged pull request.
+1. The most recent update to the branch or pull request was due to an upstream pull request being merged.
+
+#### Scripted Pipeline:
+```groovy
+node {
+    stage('Build') {
+        if (mergedPullRequest.exists) {
+            echo "Build triggered by PR # $mergedPullRequest.number, merged by $mergedPullRequest.mergedBy"
+        } else {
+            echo "Build triggered by push"
+        }
+    }
+}
+```
+
+#### Declarative Pipeline:
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    if (mergedPullRequest.exists) {
+                        echo "Build triggered by PR # $mergedPullRequest.number, merged by $mergedPullRequest.mergedBy"
+                    } else {
+                        echo "Build triggered by push"
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+### Properties
+
+Name | Type | Setter   | Description
+-----|------|----------|------------
+exists | `boolean` | false | Set to `true` if a merged PR exists and is available.
+
+If `exists` is `true`, then all properties/methods from the [pullRequest](#pullrequest) object are available for `mergedPullRequest`. Note that since the PR has been merged, not all are applicable (e.g. cannot merge an already-merged PR).
 
 # Auxiliary Classes
 

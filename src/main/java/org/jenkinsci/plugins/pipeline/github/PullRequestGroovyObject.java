@@ -13,7 +13,6 @@ import org.eclipse.egit.github.core.PullRequestMarker;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.Team;
 import org.eclipse.egit.github.core.User;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitComment;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedCommitService;
 import org.jenkinsci.plugins.pipeline.github.client.ExtendedGitHubClient;
@@ -55,10 +54,8 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     private static final long serialVersionUID = 1L;
 
     private final String jobId;
-    private final PullRequestSCMHead pullRequestHead;
-    private final RepositoryId base;
-    private final RepositoryId head;
-
+    private int pullRequestNumber;
+    private RepositoryId base;
     private ExtendedPullRequest pullRequest;
 
     private transient Job job;
@@ -73,12 +70,23 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
         this.jobId = job.getFullName();
 
-        this.pullRequestHead = GitHubHelper.getPullRequest(job);
+        this.pullRequestNumber = GitHubHelper.getPullRequest(job).getNumber();
         this.base = GitHubHelper.getRepositoryId(job);
-        this.head = RepositoryId.create(pullRequestHead.getSourceOwner(), pullRequestHead.getSourceRepo());
 
         // fetch and cache the pull request
-        this.pullRequest = getPullRequestService().getPullRequest(base, pullRequestHead.getNumber());
+        this.pullRequest = getPullRequestService().getPullRequest(base, pullRequestNumber);
+    }
+
+    PullRequestGroovyObject(@NonNull final Job job, final ExtendedPullRequest pr) throws Exception {
+        this.job = job;
+
+        this.jobId = job.getFullName();
+
+        if (null != pr) {
+            this.pullRequestNumber = pr.getNumber();
+            this.base = GitHubHelper.getRepositoryId(job);
+            this.pullRequest = pr;
+        }
     }
 
     private Job getJob() {
@@ -364,7 +372,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public Iterable<CommitGroovyObject> getCommits() {
         try {
             Stream<CommitGroovyObject> steam = getPullRequestService()
-                    .getCommits(base, pullRequestHead.getNumber())
+                    .getCommits(base, pullRequestNumber)
                     .stream()
                     .map(c -> new CommitGroovyObject(jobId, c, getCommitService(), base));
 
@@ -378,7 +386,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public Iterable<IssueCommentGroovyObject> getComments() {
         try {
             Stream<IssueCommentGroovyObject> stream = getIssueService()
-                    .getComments(base, pullRequestHead.getNumber())
+                    .getComments(base, pullRequestNumber)
                     .stream()
                     .map(c -> new IssueCommentGroovyObject(jobId, c, base, getIssueService()));
 
@@ -392,7 +400,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     public Iterable<ReviewCommentGroovyObject> getReviewComments() {
         Stream<ReviewCommentGroovyObject> stream = StreamSupport
                 .stream(getPullRequestService().pageComments2(base,
-                        pullRequestHead.getNumber()).spliterator(), false)
+                        pullRequestNumber).spliterator(), false)
                 .flatMap(Collection::stream)
                 .map(c -> new ReviewCommentGroovyObject(jobId, base, c, getCommitService()));
         return stream::iterator;
@@ -401,7 +409,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
     @Whitelisted
     public Iterable<CommitFileGroovyObject> getFiles() {
         try {
-            return getPullRequestService().getFiles(base, pullRequestHead.getNumber())
+            return getPullRequestService().getFiles(base, pullRequestNumber)
                     .stream()
                     .map(CommitFileGroovyObject::new)
                     .collect(toList());
@@ -645,7 +653,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         }
 
         try {
-            pullRequestService.createReview(base, pullRequestHead.getNumber(), commitId, event, body);
+            pullRequestService.createReview(base, pullRequestNumber, commitId, event, body);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -699,7 +707,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
             return new ReviewCommentGroovyObject(
                     jobId,
                     base,
-                    getPullRequestService().createComment2(base, pullRequestHead.getNumber(), comment),
+                    getPullRequestService().createComment2(base, pullRequestNumber, comment),
                     getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
@@ -713,7 +721,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
             return new ReviewCommentGroovyObject(
                     jobId,
                     base,
-                    getPullRequestService().replyToComment2(base, pullRequestHead.getNumber(), (int) commentId, body),
+                    getPullRequestService().replyToComment2(base, pullRequestNumber, (int) commentId, body),
                     getCommitService());
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
@@ -750,7 +758,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
         try {
             return new IssueCommentGroovyObject(
                     jobId,
-                    getIssueService().createComment(base, pullRequestHead.getNumber(), body),
+                    getIssueService().createComment(base, pullRequestNumber, body),
                     base,
                     getIssueService());
         } catch (final IOException e) {
@@ -805,7 +813,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
                         final String mergeMethod) {
         try {
             ExtendedMergeStatus status = getPullRequestService().merge(base,
-                    pullRequestHead.getNumber(),
+                    pullRequestNumber,
                     commitTitle,
                     commitMessage,
                     sha,
