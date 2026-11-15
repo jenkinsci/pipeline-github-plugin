@@ -20,10 +20,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Factory for our {@link PullRequestGlobalVariable} and {@link MergedPullRequestGlobalVariable} (if applicable) instances.
+ * Factory for our {@link RepositoryGlobalVariable}, {@link PullRequestGlobalVariable}, and {@link MergedPullRequestGlobalVariable} (if applicable) instances.
  *
  * @author Aaron Whiteside
+ * @see RepositoryGlobalVariable
  * @see PullRequestGlobalVariable
+ * @see MergedPullRequestGlobalVariable
  */
 @Extension
 public class GitHubPipelineGlobalVariables extends GlobalVariableSet {
@@ -36,17 +38,20 @@ public class GitHubPipelineGlobalVariables extends GlobalVariableSet {
             return Collections.emptyList();
         }
 
-        SCMHead scmHead = SCMHead.HeadByItem.findHead(run.getParent());
-        if (scmHead instanceof PullRequestSCMHead) {
+        SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
+        if (scmSource instanceof GitHubSCMSource) {
             Collection<GlobalVariable> result = new LinkedList<>();
-            result.add(new PullRequestGlobalVariable());
-            if (shouldDetectMergedPullRequest(run)) {
+            result.add(new RepositoryGlobalVariable());
+
+            SCMHead scmHead = SCMHead.HeadByItem.findHead(run.getParent());
+            if (scmHead instanceof PullRequestSCMHead) {
+                result.add(new PullRequestGlobalVariable());
+                if (shouldDetectMergedPullRequest(run)) {
+                    result.add(new MergedPullRequestGlobalVariable());
+                }
+            } else if (scmHead instanceof BranchSCMHead && shouldDetectMergedPullRequest(run)) {
                 result.add(new MergedPullRequestGlobalVariable());
             }
-            return result;
-        } else if (scmHead instanceof BranchSCMHead && shouldDetectMergedPullRequest(run)) {
-            Collection<GlobalVariable> result = new LinkedList<>();
-            result.add(new MergedPullRequestGlobalVariable());
             return result;
         }
         return Collections.emptyList();
