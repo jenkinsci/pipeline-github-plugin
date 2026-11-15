@@ -38,35 +38,48 @@ public class GitHubPipelineGlobalVariables extends GlobalVariableSet {
             return Collections.emptyList();
         }
 
+        LOG.debug("Processing global variables for run: {}", run.getFullDisplayName());
+
         SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
+        LOG.debug("Found SCM source type: {}", scmSource != null ? scmSource.getClass() : "null");
+
         if (scmSource instanceof GitHubSCMSource) {
+            LOG.debug("SCM source is GitHubSCMSource, creating global variables");
+            GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
             Collection<GlobalVariable> result = new LinkedList<>();
             result.add(new RepositoryGlobalVariable());
 
             SCMHead scmHead = SCMHead.HeadByItem.findHead(run.getParent());
+            LOG.debug("Found SCM head type: {}", scmHead != null ? scmHead.getClass() : "null");
+
             if (scmHead instanceof PullRequestSCMHead) {
                 result.add(new PullRequestGlobalVariable());
-                if (shouldDetectMergedPullRequest(run)) {
+
+                if (shouldDetectMergedPullRequest(gitHubSource, run)) {
+                    LOG.debug("MergedPullRequestGlobalVariable for PR run: {}", run.getFullDisplayName());
                     result.add(new MergedPullRequestGlobalVariable());
                 }
-            } else if (scmHead instanceof BranchSCMHead && shouldDetectMergedPullRequest(run)) {
+            } else if (scmHead instanceof BranchSCMHead && shouldDetectMergedPullRequest(gitHubSource, run)) {
+                LOG.debug("MergedPullRequestGlobalVariable for branch run: {}", run.getFullDisplayName());
                 result.add(new MergedPullRequestGlobalVariable());
             }
             return result;
         }
+
+        LOG.debug("SCM source is not GitHubSCMSource, returning empty collection");
         return Collections.emptyList();
     }
 
-    private boolean shouldDetectMergedPullRequest(final Run<?, ?> run) {
-        SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
-        if (null != scmSource && scmSource instanceof GitHubSCMSource) {
-            GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
-            List<SCMSourceTrait> traits = gitHubSource.getTraits();
-            for (SCMSourceTrait trait : traits) {
-                if (trait instanceof DetectMergedPullRequestTrait) {
-                    LOG.debug("{} found for run: {}", trait.getClass(), run.getFullDisplayName());
-                    return true;
-                }
+    private boolean shouldDetectMergedPullRequest(GitHubSCMSource gitHubSource, final Run<?, ?> run) {
+        List<SCMSourceTrait> traits = gitHubSource.getTraits();
+        LOG.trace("Checking {} traits for DetectMergedPullRequestTrait", traits.size());
+
+        for (SCMSourceTrait trait : traits) {
+            LOG.trace("Evaluating trait: {}", trait.getClass());
+
+            if (trait instanceof DetectMergedPullRequestTrait) {
+                LOG.debug("DetectMergedPullRequestTrait found for run: {}", run.getFullDisplayName());
+                return true;
             }
         }
         return false;
