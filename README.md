@@ -8,6 +8,7 @@ Table of Contents
     * [issueCommentTrigger](#issuecommenttrigger)
     * [pullRequestReview](#pullrequestreview)
   * [Global Variables](#global-variables)
+    * [repository](#repository)
     * [pullRequest](#pullrequest)
     * [mergedPullRequest](#mergedpullrequest)
   * [Auxiliary Classes](#auxiliary-classes)
@@ -198,7 +199,59 @@ The GitHub review comment and author that triggered the build are exposed as env
 # Global Variables
 
 ## `repository`
-Coming soon!
+
+### Usage
+
+The `repository` global variable provides access to information about the GitHub repository being built. It is available in all GitHub builds (both pull requests and branch builds).
+
+#### Scripted Pipeline:
+```groovy
+node {
+    stage('Build') {
+        echo "Building repository: ${repository.name}"
+        echo "Owner: ${repository.owner}"
+        echo "Default branch: ${repository.defaultBranch}"
+    }
+}
+```
+
+#### Declarative Pipeline:
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    echo "Building repository: ${repository.name}"
+                    echo "Owner: ${repository.owner}"
+                    echo "Default branch: ${repository.defaultBranch}"
+                }
+            }
+        }
+    }
+}
+```
+
+### Properties
+
+Name | Type | Description
+-----|------|------------
+name | `String` | The name of the repository
+owner | `String` | The login of the repository owner
+defaultBranch | `String` | The default branch of the repository (typically `master` or `main`)
+description | `String` | The description of the repository
+url | `String` | The HTML URL of the repository
+cloneUrl | `String` | The HTTPS clone URL of the repository
+sshUrl | `String` | The SSH clone URL of the repository
+gitUrl | `String` | The git protocol URL of the repository
+private | `Boolean` | Whether the repository is private
+fork | `Boolean` | Whether the repository is a fork
+stargazersCount | `Integer` | The number of stars/watchers on the repository
+forksCount | `Integer` | The number of forks of the repository
+openIssuesCount | `Integer` | The number of open issues in the repository
+language | `String` | The primary programming language of the repository
+id | `Long` | The unique identifier of the repository
 
 ## `pullRequest`
 
