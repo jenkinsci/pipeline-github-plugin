@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.pipeline.github;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import hudson.model.Job;
 import jenkins.model.Jenkins;
@@ -13,9 +12,7 @@ import org.jenkinsci.plugins.workflow.cps.persistence.PersistIn;
 import org.jenkinsci.plugins.workflow.cps.persistence.PersistenceContext;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 
 /**
  * Groovy object that represents a GitHub Repository.
@@ -26,8 +23,6 @@ public class RepositoryGroovyObject extends GroovyObjectSupport implements Seria
     private static final long serialVersionUID = 1L;
 
     private final String jobId;
-    private final String owner;
-    private final String name;
     private Repository repository;
 
     private transient Job job;
@@ -43,11 +38,7 @@ public class RepositoryGroovyObject extends GroovyObjectSupport implements Seria
             throw new IllegalStateException("Job is not a GitHub job");
         }
 
-        this.owner = repositoryId.getOwner();
-        this.name = repositoryId.getName();
-
-        // fetch and cache the repository
-        this.repository = getRepositoryService().getRepository(owner, name);
+        this.repository = getRepositoryService().getRepository(repositoryId.getOwner(), repositoryId.getName());
     }
 
     private Job getJob() {
