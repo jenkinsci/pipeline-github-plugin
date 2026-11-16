@@ -57,7 +57,7 @@ public class RepositoryGroovyObjectTest {
                     + "\"clone_url\":\"https://github.com/owner/repo.git\","
                     + "\"ssh_url\":\"git@github.com:owner/repo.git\","
                     + "\"git_url\":\"git://github.com/owner/repo.git\",\"private\":true,\"fork\":false,"
-                    + "\"watchers\":17,\"forks\":3,\"open_issues\":5,\"language\":\"Java\",\"id\":12345}")));
+                    + "\"watchers\":17,\"forks\":3,\"open_issues\":5,\"id\":12345}")));
 
         RepositoryGroovyObject repository = new RepositoryGroovyObject(job);
 
@@ -74,7 +74,6 @@ public class RepositoryGroovyObjectTest {
         assertEquals(17, repository.getStargazersCount());
         assertEquals(3, repository.getForksCount());
         assertEquals(5, repository.getOpenIssuesCount());
-        assertEquals("Java", repository.getLanguage());
         assertEquals(12345L, repository.getId());
     }
 }

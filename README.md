@@ -250,7 +250,6 @@ fork | `Boolean` | Whether the repository is a fork
 stargazersCount | `Integer` | The number of stars/watchers on the repository
 forksCount | `Integer` | The number of forks of the repository
 openIssuesCount | `Integer` | The number of open issues in the repository
-language | `String` | The primary programming language of the repository
 id | `Long` | The unique identifier of the repository
 
 ## `pullRequest`

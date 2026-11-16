@@ -131,11 +131,6 @@ public class RepositoryGroovyObject extends GroovyObjectSupport implements Seria
     }
 
     @Whitelisted
-    public String getLanguage() {
-        return repository.getLanguage();
-    }
-
-    @Whitelisted
     public long getId() {
         return repository.getId();
     }
