@@ -86,7 +86,7 @@ public class RepositoryGroovyObject extends GroovyObjectSupport implements Seria
     }
 
     @Whitelisted
-    public String getUrl() {
+    public String getHtmlUrl() {
         return repository.getHtmlUrl();
     }
 

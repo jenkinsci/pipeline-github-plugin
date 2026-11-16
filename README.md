@@ -241,7 +241,7 @@ name | `String` | The name of the repository
 owner | `String` | The login of the repository owner
 defaultBranch | `String` | The default branch of the repository (typically `master` or `main`)
 description | `String` | The description of the repository
-url | `String` | The HTML URL of the repository
+htmlUrl | `String` | The HTML URL of the repository
 cloneUrl | `String` | The HTTPS clone URL of the repository
 sshUrl | `String` | The SSH clone URL of the repository
 gitUrl | `String` | The git protocol URL of the repository

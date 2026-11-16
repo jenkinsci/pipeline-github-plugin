@@ -65,7 +65,7 @@ public class RepositoryGroovyObjectTest {
         assertEquals("owner", repository.getOwner());
         assertEquals("main", repository.getDefaultBranch());
         assertEquals("A test repository", repository.getDescription());
-        assertEquals("https://github.com/owner/repo", repository.getUrl());
+        assertEquals("https://github.com/owner/repo", repository.getHtmlUrl());
         assertEquals("https://github.com/owner/repo.git", repository.getCloneUrl());
         assertEquals("git@github.com:owner/repo.git", repository.getSshUrl());
         assertEquals("git://github.com/owner/repo.git", repository.getGitUrl());
