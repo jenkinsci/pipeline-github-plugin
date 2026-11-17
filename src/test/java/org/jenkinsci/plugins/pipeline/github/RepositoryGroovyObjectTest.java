@@ -57,7 +57,7 @@ public class RepositoryGroovyObjectTest {
                     + "\"clone_url\":\"https://github.com/owner/repo.git\","
                     + "\"ssh_url\":\"git@github.com:owner/repo.git\","
                     + "\"git_url\":\"git://github.com/owner/repo.git\",\"private\":true,\"fork\":false,"
-                    + \"id\":12345}")));
+                    + "\"id\":12345}")));
 
         RepositoryGroovyObject repository = new RepositoryGroovyObject(job);
 
