@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Extension
 public class GitHubEventSubscriber extends GHEventsSubscriber {
 
-    private static final Logger LOG = LoggerFactory.getLogger(GHEventsSubscriber.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GHEventSubscriber.class);
 
     @Override
     protected boolean isApplicable(@Nullable final Item project) {
