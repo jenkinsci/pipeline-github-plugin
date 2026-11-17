@@ -4,6 +4,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for our {@link RepositoryGroovyObject} instance.
@@ -11,6 +13,7 @@ import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
  * @see RepositoryGroovyObject
  */
 public class RepositoryGlobalVariable extends GlobalVariable {
+    private static final Logger LOG = LoggerFactory.getLogger(RepositoryGlobalVariable.class);
 
     @NonNull
     @Override
@@ -25,6 +28,7 @@ public class RepositoryGlobalVariable extends GlobalVariable {
         if (build == null) {
             throw new IllegalStateException("No associated build");
         }
+        LOG.trace("initializing {}", RepositoryGroovyObject.class);
         return new RepositoryGroovyObject(build.getParent());
     }
 
