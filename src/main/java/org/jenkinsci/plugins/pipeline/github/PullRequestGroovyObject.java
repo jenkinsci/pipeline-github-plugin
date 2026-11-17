@@ -1,10 +1,8 @@
 package org.jenkinsci.plugins.pipeline.github;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.GroovyObjectSupport;
 import hudson.model.Job;
-import jenkins.model.Jenkins;
 import org.eclipse.egit.github.core.Comment;
 import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.Label;
@@ -91,10 +89,7 @@ public class PullRequestGroovyObject extends GroovyObjectSupport implements Seri
 
     private Job getJob() {
         if (job == null) {
-            job = Jenkins.get().getItemByFullName(jobId, Job.class);
-            if (job == null) {
-                throw new IllegalStateException("Unable to find Job: " + jobId);
-            }
+            job = GitHubHelper.getJob(jobId);
         }
         return job;
     }

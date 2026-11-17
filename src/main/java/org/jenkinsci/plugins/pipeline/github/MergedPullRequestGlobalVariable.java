@@ -32,6 +32,7 @@ public class MergedPullRequestGlobalVariable extends GlobalVariable {
         if (build == null) {
             throw new IllegalStateException("No associated build");
         }
+        LOG.trace("initializing {}", MergedPullRequestGroovyObject.class);
         return new MergedPullRequestGroovyObject(build.getParent(), getMergedPullRequest(build));
     }
 
@@ -62,6 +63,7 @@ public class MergedPullRequestGlobalVariable extends GlobalVariable {
         try {
             RepositoryId repoId = GitHubHelper.getRepositoryId(run.getParent());
             ExtendedPullRequestService prService = new ExtendedPullRequestService(GitHubHelper.getGitHubClient(run.getParent()));
+            LOG.debug("searching for merged PR in repo {}/{}, commit {}", repoId.getOwner(), repoId.getName(), commitHash);
             return prService.getMergedPullRequest(repoId, commitHash);
         } catch (Exception e) {
             LOG.warn("Failed to query GitHub API for pull requests with merge commit {}; job = {}", commitHash, run.getFullDisplayName(), e);

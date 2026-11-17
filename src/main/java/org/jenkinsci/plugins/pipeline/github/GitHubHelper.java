@@ -19,9 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Various utility methods to obtain clients, repos and pull request scm heads from Jobs
@@ -79,9 +76,7 @@ public class GitHubHelper {
         SCMSource src = SCMSource.SourceByItem.findSource(job);
         if (src instanceof GitHubSCMSource) {
             GitHubSCMSource source = (GitHubSCMSource) src;
-            if (source.getCredentialsId() != null) {
-                return RepositoryId.create(source.getRepoOwner(), source.getRepository());
-            }
+            return RepositoryId.create(source.getRepoOwner(), source.getRepository());
         }
         return null;
     }
