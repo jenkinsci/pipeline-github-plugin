@@ -245,9 +245,9 @@ htmlUrl | `String` | The HTML URL of the repository
 cloneUrl | `String` | The HTTPS clone URL of the repository
 sshUrl | `String` | The SSH clone URL of the repository
 gitUrl | `String` | The git protocol URL of the repository
-private | `Boolean` | Whether the repository is private. Note: because `private` is a reserved Groovy keyword, this property should be accessed via its full method, like: `echo "private: ${repository.isPrivate()}"`
-fork | `Boolean` | Whether the repository is a fork
-id | `Long` | The unique identifier of the repository
+private | `boolean` | Whether the repository is private. Note: because `private` is a reserved Groovy keyword, this property should be accessed via its full method, like: `echo "private: ${repository.isPrivate()}"`
+fork | `boolean` | Whether the repository is a fork
+id | `long` | The unique identifier of the repository
 
 ## `pullRequest`
 
