@@ -40,7 +40,7 @@ public class GitHubPipelineGlobalVariables extends GlobalVariableSet {
 
         LOG.debug("Processing global variables for run: {}", run.getFullDisplayName());
 
-        SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
+        SCMSource scmSource = GitHubHelper.getScmSource(run);
         LOG.debug("Found SCM source type: {}", scmSource != null ? scmSource.getClass() : "null");
 
         if (scmSource instanceof GitHubSCMSource) {

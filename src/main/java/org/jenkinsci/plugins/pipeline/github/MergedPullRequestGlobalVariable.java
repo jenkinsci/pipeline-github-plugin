@@ -37,7 +37,7 @@ public class MergedPullRequestGlobalVariable extends GlobalVariable {
     }
 
     private ExtendedPullRequest getMergedPullRequest(final Run<?, ?> run) {
-        SCMSource scmSource = SCMSource.SourceByItem.findSource(run.getParent());
+        SCMSource scmSource = GitHubHelper.getScmSource(run);
         LOG.debug("Checking for merged pull request for run: {}", run.getFullDisplayName());
         if (null != scmSource && scmSource instanceof GitHubSCMSource) {
             GitHubSCMSource gitHubSource = (GitHubSCMSource) scmSource;
