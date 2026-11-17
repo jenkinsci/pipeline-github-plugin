@@ -116,21 +116,6 @@ public class RepositoryGroovyObject extends GroovyObjectSupport implements Seria
     }
 
     @Whitelisted
-    public int getStargazersCount() {
-        return repository.getWatchers();
-    }
-
-    @Whitelisted
-    public int getForksCount() {
-        return repository.getForks();
-    }
-
-    @Whitelisted
-    public int getOpenIssuesCount() {
-        return repository.getOpenIssues();
-    }
-
-    @Whitelisted
     public long getId() {
         return repository.getId();
     }

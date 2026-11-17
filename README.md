@@ -247,9 +247,6 @@ sshUrl | `String` | The SSH clone URL of the repository
 gitUrl | `String` | The git protocol URL of the repository
 private | `Boolean` | Whether the repository is private. Note: because `private` is a reserved Groovy keyword, this property should be accessed via its full method, like: `echo "private: ${repository.isPrivate()}"`
 fork | `Boolean` | Whether the repository is a fork
-stargazersCount | `Integer` | The number of stars/watchers on the repository
-forksCount | `Integer` | The number of forks of the repository
-openIssuesCount | `Integer` | The number of open issues in the repository
 id | `Long` | The unique identifier of the repository
 
 ## `pullRequest`
